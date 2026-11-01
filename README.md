@@ -9,7 +9,7 @@ S.P.E.C. = Station for Prompt Editing & Composition。
 
 ## 启动
 
-**免安装（推荐）**：从 [Releases](../../releases) 下载 `SPEC7.exe` 后双击。服务在 127.0.0.1:8765 起站、自动打开浏览器；关掉控制台窗口即停站。exe 已内嵌前端资源与图标（`design/icons/spec-7.ico`），不需要系统 Python；首次运行会在 exe 同目录生成 `data/` 与 `user_data/`。旁边若有 `public/` 目录则优先读取它，方便热改前端。`SPEC7.exe` 与发布包是构建产物，不放进 git 仓库，只随 Releases 分发；自行打包见下。
+**免安装（推荐）**：从 [Releases](https://github.com/LucasHe1015/spec-prompt-workstation/releases) 下载 `SPEC7.exe`（发布包）后双击。服务在 127.0.0.1:8765 起站、自动打开浏览器；关掉控制台窗口即停站。exe 已内嵌前端资源与图标（`design/icons/spec-7.ico`），不需要系统 Python；首次运行会在 exe 同目录生成 `data/` 与 `user_data/`。旁边若有 `public/` 目录则优先读取它，方便热改前端。`SPEC7.exe` 与发布包是构建产物，不放进 git 仓库，只随 Releases 分发；自行打包见下。
 
 **源码模式**（改服务端时用）：安装 Python 3.10+，双击 [启动SPEC.bat](<启动SPEC.bat>)，或运行：
 
@@ -45,7 +45,7 @@ py -3.13 publish/_build/build_release.py --force  # 生成 publish/SPEC7-<versio
 
 **本机运行不等于所有配置都离线。** 默认引擎地址指向本机；若改成远端地址，待翻译内容会发给该服务。自动引擎会探测配置的接口，编辑后自动翻译也会使用所选服务。请只配置可信端点；远端连接优先使用 HTTPS。
 
-- [config.json](<config.json>) 保存本机引擎配置；填写的 API Key 会明文保存在本机，配置 API 不回显密钥。不要分享此文件。修改 API 服务地址时请重新输入密钥；服务不会把旧密钥转发到新地址。
+- `config.json` 保存本机引擎配置；填写的 API Key 会明文保存在本机，配置 API 不回显密钥。不要分享此文件；它由程序在首次运行时生成，不进入仓库。修改 API 服务地址时请重新输入密钥；服务不会把旧密钥转发到新地址。
 - `user_data/` 保存历史、收藏、角色卡、预设、画廊和衣柜，包括完整提示词、译文、图片及时间信息。图片也可能自带生成参数或其他元数据。
 - 浏览器 `localStorage` 中的 `spec7:draft` 保存原文草稿，刷新后可以恢复。共享电脑时应清理该站点的浏览器存储；这不会删除磁盘历史和收藏。
 - 顶部仪表读取并展示本机硬件占用、显卡名称和内存/显存容量；共享屏幕时注意遮挡。
@@ -79,7 +79,7 @@ python export_source.py
 - [public/index.html](<public/index.html>)、[public/app.js](<public/app.js>)、[public/styles.css](<public/styles.css>)：页面、交互与样式。
 - 动效层：[public/motion.js](<public/motion.js>) 提供 `SPECMotion` 动画助手（显示/隐藏、折叠、级联、按压反馈，`prefers-reduced-motion` 下自动瞬切）；[public/motion-core.css](<public/motion-core.css>) 定义时长/缓动令牌与公共关键帧，[motion-nav.css](<public/motion-nav.css>)、[motion-panels.css](<public/motion-panels.css>)、[motion-overlays.css](<public/motion-overlays.css>) 分别承载侧栏与视图、面板与列表、浮层与弹窗的动效。改动约定见 [MOTION_SPEC.md](<MOTION_SPEC.md>)。
 - 配色层：[public/styles.css](<public/styles.css>) 里的每个颜色字面量都已收敛成语义 token（`--paper`、`--ink`、`--face-*`、`--sh-*`、`--hl-*`、`--veil-*` 等）；[theme-dark.css](<public/theme-dark.css>) 只重映射这些 token 的深色取值，[theme.css](<public/theme.css>) 承载切换按钮、圆形展开的 View Transition 与少量深色修正，[theme-dark-states.css](<public/theme-dark-states.css>)、[theme-dark-overlays.css](<public/theme-dark-overlays.css>) 补齐深色下的交互状态与浮层细节，[theme.js](<public/theme.js>) 负责切换与持久化。新增颜色请写成 token 引用，否则深色主题无法跟随。
-- [data/glossary.json](<data/glossary.json>)：可编辑的本地词条库。
+- `data/glossary.json`：可编辑的本地词条库。仓库不含该文件（避免带出个人词条），由 [tools/build_glossary.py](<tools/build_glossary.py>) 从已入库的 `data/selected_tags.csv`、`data/glossary.base.json`、`data/parts/*.json` 合成，需要 `pip install pypinyin`。
 
 ## 许可证与署名
 
