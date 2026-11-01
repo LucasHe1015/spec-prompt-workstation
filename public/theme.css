@@ -1,0 +1,120 @@
+/* ==========================================================================
+   S.P.E.C. 7 // THEME SWITCH LAYER  (light <-> dark)
+   Only the mechanics: the toggle button, its icon crossfade, and the
+   "darkness spreads from the switch" view transition.
+   Colour values live in styles.css (light) and theme-dark.css (dark).
+   ========================================================================== */
+
+/* --------------------------- toggle button -------------------------------- */
+
+.theme-toggle {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-toggle .icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  transition:
+    opacity 190ms var(--m-ease-out, ease-out),
+    transform 330ms var(--m-ease-out, ease-out);
+}
+
+.theme-toggle .icon-sun { opacity: 0; transform: rotate(-80deg) scale(0.55); }
+.theme-toggle .icon-moon { opacity: 1; transform: none; }
+
+html[data-theme="dark"] .theme-toggle .icon-sun { opacity: 1; transform: none; }
+html[data-theme="dark"] .theme-toggle .icon-moon { opacity: 0; transform: rotate(80deg) scale(0.55); }
+
+/* one mechanical kick when the switch is thrown — same language as the rail */
+.theme-toggle.is-flipping {
+  animation: themeToggleKick 560ms var(--m-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+@keyframes themeToggleKick {
+  0% { transform: rotate(0deg); }
+  34% { transform: rotate(-22deg); }
+  68% { transform: rotate(6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* the button keeps its 1px hard shadow while kicking */
+.theme-toggle:not(.is-flipping):active { transform: translateY(1px); }
+
+/* While the circular wipe runs, element-level colour transitions are off:
+   the reveal itself is the transition, and a second cross-fade behind the
+   moving clip edge makes the new snapshot land on half-faded colours. */
+html.is-theme-switching *,
+html.is-theme-switching *::before,
+html.is-theme-switching *::after {
+  transition: none !important;
+}
+
+/* --------------------- view transition: the spread ------------------------ */
+
+/* The default root crossfade is replaced by a circular wipe that starts at the
+   switch — mechanically "flipping the lights", not a soft app fade. */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle .icon {
+    transition: none;
+  }
+  .theme-toggle.is-flipping {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   DARK-THEME CORRECTIONS
+   A few rules cannot flip on their own through tokens alone: colour blocks
+   that carry light text, "ink" surfaces that invert to paper, and error text
+   that has to lift off dark paper. Everything here stays scoped to the dark
+   theme so the light console is untouched.
+   ========================================================================== */
+
+/* 1. four-colour module blocks read as light stickers on dark paper: ink text */
+html[data-theme="dark"] .rack-btn.is-active,
+html[data-theme="dark"] .rack-btn.is-active .rack-lbl,
+html[data-theme="dark"] .rack-btn.is-active .rack-code {
+  color: var(--on-color-block);
+}
+
+/* 2. ink-surfaced buttons invert to paper surface with ink text */
+html[data-theme="dark"] .record-action.primary,
+html[data-theme="dark"] .confirm-delete-btn.is-neutral {
+  color: var(--paper-2);
+}
+
+/* 3. the error toast keeps a readable pair on dark paper */
+html[data-theme="dark"] .toast.is-error {
+  background-color: #8E2A1E;
+  color: #F8F2E4;
+}
+
+/* 4. red "failed / offline" labels lift off the dark paper; the hard red
+      shadows under the launch buttons deliberately keep the dark red.
+      Red-surfaced hover buttons are NOT in this list: their label must stay
+      light (light text on the red wash), which theme-dark-states.css keeps. */
+html[data-theme="dark"] .alert-code,
+html[data-theme="dark"] .alert-copy h3,
+html[data-theme="dark"] .cfg-state.is-bad,
+html[data-theme="dark"] .hr-val.bad,
+html[data-theme="dark"] .be-code,
+html[data-theme="dark"] .btn-translate.is-busy {
+  color: #F0705A;
+}
+
+/* 5. native widgets follow the active theme */
+html[data-theme="dark"] * {
+  scrollbar-color: var(--line-2) transparent;
+}

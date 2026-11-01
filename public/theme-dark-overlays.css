@@ -1,0 +1,200 @@
+/* ==========================================================================
+   S.P.E.C. 7 // DARK THEME — OVERLAYS, DECORATION, IMAGERY
+   The token remap in theme-dark.css flips every flat surface, but a few things
+   do not survive it on their own: translucent scrims over dark paper turn
+   almost solid black, soft drop shadows disappear, and the light-paper frames
+   around artwork read as bright holes. This file only touches those cases.
+
+   Scope: html[data-theme="dark"] … every rule below is dark-only, so the light
+   console is byte-for-byte untouched. Only colour, background, border-colour,
+   shadow, filter and opacity are set here – no size, layout or motion changes.
+   Style: NASA-punk. Hard offset shadows, printed-paper edges, one red accent;
+   no glow, no gradients larger than a 10px hazard stripe.
+
+   Loaded after theme.css / theme-dark.css (index.html), before motion-*.css.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. SCRIMS — keep depth behind the dim layer
+   ========================================================================== */
+
+/* --sh-550 remaps to 0.89 black on dark, which flattens the console behind the
+   engine bay into a black void and swallows the modal's hard offset shadow.
+   0.6 matches the confirm dialog scrim and keeps the page readable as "below". */
+html[data-theme="dark"] .modal-backdrop {
+  background-color: var(--scrim-s-420);
+}
+
+/* the "no service" screen may cover an empty shell, but a full-black field
+   kills the paper grain – keep a near-opaque scrim instead */
+html[data-theme="dark"] .boot-error {
+  background-color: var(--scrim-s-720);
+}
+
+/* ==========================================================================
+   2. FLOATING SURFACES — hard offset shadows on dark paper
+   ========================================================================== */
+
+/* The ten-pixel hard shadow is the engine bay's signature; it still works when
+   the scrim above lets the panel behind it read. */
+html[data-theme="dark"] .modal {
+  box-shadow: 10px 10px 0 var(--shadow-a-350);
+}
+
+/* dialogs: a lighter cut edge than the medium line, plus the same hard shadow */
+html[data-theme="dark"] .confirm-card {
+  border-color: var(--line-3);
+  box-shadow: 8px 8px 0 var(--shadow-a-350);
+}
+
+html[data-theme="dark"] .boot-error-card {
+  box-shadow: 10px 10px 0 var(--shadow-a-350);
+}
+
+/* the manual already has an ink border; it only loses its shadow on dark */
+html[data-theme="dark"] .help-pop {
+  box-shadow: 7px 7px 0 var(--shadow-a-350);
+}
+
+/* dropdown panels: medium line-2 is barely visible on dark paper, and their
+   soft blur shadows vanish. Keep the light theme's hierarchy, dark-cut. */
+html[data-theme="dark"] .character-picker-panel,
+html[data-theme="dark"] .combo-wardrobe-pop,
+html[data-theme="dark"] .character-tags-wardrobe-fold,
+html[data-theme="dark"] .source-fold-body,
+html[data-theme="dark"] .character-fold-body,
+html[data-theme="dark"] .preset-fold-body {
+  border-color: var(--line-3);
+  box-shadow: 8px 8px 0 var(--shadow-a-350);
+}
+
+html[data-theme="dark"] .preset-hover-pop {
+  border-color: var(--line-3);
+  box-shadow: 6px 6px 0 var(--shadow-a-350);
+}
+
+/* ==========================================================================
+   3. INSIDE THE ENGINE BAY — accordion + health readout keep their edges
+   ========================================================================== */
+
+html[data-theme="dark"] .cfg {
+  border-color: var(--line-2);
+}
+
+html[data-theme="dark"] .cfg[open] summary {
+  border-bottom-color: var(--line-2);
+}
+
+html[data-theme="dark"] .health-readout {
+  border-color: var(--line-3);
+}
+
+/* ==========================================================================
+   4. ALERT / TOAST / BOOT ERROR — error states lift off dark paper
+   ========================================================================== */
+
+/* the alert body is a red-wash plate on dark; the light-theme red-dark line
+   and code border read as brown. c4 is the warm mid-red that stays an alarm. */
+html[data-theme="dark"] .alert {
+  border-color: var(--c4);
+  box-shadow: 0 2px 0 var(--sh-280);
+}
+
+html[data-theme="dark"] .alert-code {
+  border-color: var(--c4);
+}
+
+/* the hazard-stripe base colour is now remapped in theme-dark.css
+   (--alert-stripe), so .alert-stripe itself needs no override here. */
+
+/* normal toast is deliberately a light paper slip (ink surface flips to paper);
+   its dark text pair is already correct. The error toast pair is fixed in
+   theme.css (§3). Nothing to repaint here. */
+
+/* ==========================================================================
+   5. IMAGE FRAMES — dashed empty slots and artwork borders
+   ========================================================================== */
+
+/* 1px dashed line-2 is a hairline on dark; line-3 keeps the empty slot reading
+   as a cut-out without turning it into a bright box. */
+html[data-theme="dark"] .character-portrait,
+html[data-theme="dark"] .record-example-frame,
+html[data-theme="dark"] .gallery-preview,
+html[data-theme="dark"] .wardrobe-preview {
+  border-color: var(--line-3);
+  background-color: var(--face-sunk);
+}
+
+/* the light hover feedback (ink cut edge + lifted surface) must survive the
+   higher-specificity dark rules above, so it is restated here. */
+html[data-theme="dark"] .character-portrait:hover,
+html[data-theme="dark"] .record-example-frame:hover,
+html[data-theme="dark"] .gallery-preview:hover {
+  border-color: var(--ink-2);
+  background-color: var(--face-bright);
+}
+
+html[data-theme="dark"] .wardrobe-preview:hover {
+  border-color: var(--ink-2);
+}
+
+/* large "add new" slots: same dashed cut-out treatment + matching hover */
+html[data-theme="dark"] .gallery-new,
+html[data-theme="dark"] .cg-new,
+html[data-theme="dark"] .wardrobe-add-card,
+html[data-theme="dark"] .wardrobe-empty,
+html[data-theme="dark"] .record-empty {
+  border-color: var(--line-3);
+}
+
+html[data-theme="dark"] .gallery-new:hover,
+html[data-theme="dark"] .cg-new:hover,
+html[data-theme="dark"] .wardrobe-add-card:hover {
+  border-color: var(--ink-2);
+  background-color: var(--face-bright);
+  color: var(--ink-2);
+}
+
+/* fixed image wells inside cards: the hairline divider needs one notch more
+   contrast so the artwork does not bleed into the copy column */
+html[data-theme="dark"] .gallery-card-preview,
+html[data-theme="dark"] .wardrobe-card-preview {
+  border-right-color: var(--line-2);
+  background-color: var(--face-sunk);
+}
+
+html[data-theme="dark"] .cg-portrait {
+  border-color: var(--line-2);
+  background-color: var(--face-sunk);
+}
+
+/* thumbnails: lift the frame a hair so small images stay contained */
+html[data-theme="dark"] .character-pick-thumb,
+html[data-theme="dark"] .character-mini-thumb,
+html[data-theme="dark"] .wardrobe-mini-thumb,
+html[data-theme="dark"] .combo-wardrobe-thumb {
+  border-color: var(--line-2);
+}
+
+/* ==========================================================================
+   6. PHOTOS — match the cool-down already applied in theme-dark.css
+   ========================================================================== */
+
+/* records, picker rows and wardrobe thumbs were missed by the original list;
+   same gentle -6% so artwork keeps the same weight as the gallery previews. */
+html[data-theme="dark"] .record-example-frame img,
+html[data-theme="dark"] .character-pick-thumb img,
+html[data-theme="dark"] .character-mini-thumb img,
+html[data-theme="dark"] .wardrobe-mini-thumb img,
+html[data-theme="dark"] .combo-wardrobe-thumb img {
+  filter: brightness(0.94) saturate(0.96);
+}
+
+/* ==========================================================================
+   7. DECORATION — patch / hazard / grain
+   ========================================================================== */
+
+/* The mission patch and the hazard tapes stay light printed objects; their
+   ink edges already invert with the tokens (cream stripes on dark paper), and
+   the patch rim is set in theme-dark.css. No extra paint is needed – adding a
+   glow here would break the single-red-accent rule. */

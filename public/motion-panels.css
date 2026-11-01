@@ -1,0 +1,529 @@
+/* ==========================================================================
+   S.P.E.C. 7 // MOTION — PANELS, CHIPS, LISTS & CONTROLS
+   Owner: panel-motion (only writer of this file).
+   Scope: three-column panels, fold flyouts, tag chips / sentence blocks,
+   record + gallery + glossary + character lists, buttons / inputs.
+
+   Contract: MOTION_SPEC.md §3/§4/§5/§8.2.
+   - additive rules only; styles.css / index.html / app.js stay frozen
+   - tokens & keyframes come from motion-core.css (none re-declared here)
+   - no !important outside the reduced-motion fallback at the bottom
+   - no size-affecting properties are overridden (height/width/padding/border)
+   ========================================================================== */
+
+/* ==========================================================================
+   1. THREE-COLUMN PANEL CASCADE
+   #panels keeps a short container fade (styles.css had fadeIn 0.18s); the
+   three columns then rise A → B → C at 0 / 60 / 120ms, 260ms each, so the
+   whole cascade lands in 380ms (< --m-dur-4 420ms). Fill is `backwards` on
+   purpose: after the animation the panels return to their natural state, so
+   no transform stays alive to fight hover states.
+   ========================================================================== */
+
+#panels {
+  animation: mFadeIn var(--m-dur-2) linear both;
+}
+
+#panels > .panel {
+  animation-name: mRiseIn;
+  animation-duration: var(--m-dur-3);
+  animation-timing-function: var(--m-ease-out);
+  animation-fill-mode: backwards;
+}
+
+#panels > .panel:nth-child(1),
+#panels > .panel-a { animation-delay: 0ms; }
+#panels > .panel:nth-child(2),
+#panels > .panel-b { animation-delay: 60ms; }
+#panels > .panel:nth-child(3),
+#panels > .panel-c { animation-delay: 120ms; }
+
+/* ==========================================================================
+   2. FOLD FLYOUTS (source / character / preset)
+   SPECMotion.fold() animates these absolute flyouts with WAAPI opacity +
+   translateY + scale. transform-origin has to match the direction they
+   unfold from; the arrow rotation is driven by aria-expanded in styles.css,
+   we only re-time it with the motion tokens.
+   ========================================================================== */
+
+.source-fold-body { transform-origin: top left; }
+.character-fold-body,
+.preset-fold-body { transform-origin: bottom left; }
+
+.source-fold-arrow,
+.character-fold-arrow,
+.preset-fold-arrow {
+  transition: transform var(--m-dur-2) var(--m-ease-out),
+              color var(--m-dur-1) var(--m-ease-out);
+}
+
+.source-fold-toggle[aria-expanded="true"] .source-fold-arrow,
+.character-fold-toggle[aria-expanded="true"] .character-fold-arrow,
+.preset-fold-toggle[aria-expanded="true"] .preset-fold-arrow {
+  transform: rotate(180deg);
+  color: var(--ink-2);
+}
+
+/* Toggle strips: colour/border feedback only — no size change. */
+.source-fold-toggle,
+.character-fold-toggle,
+.preset-fold-toggle {
+  transition: background-color var(--m-dur-1) var(--m-ease-out),
+              border-color var(--m-dur-1) var(--m-ease-out),
+              color var(--m-dur-1) var(--m-ease-out),
+              box-shadow var(--m-dur-1) var(--m-ease-snap);
+}
+
+.source-fold-toggle[aria-expanded="true"],
+.character-fold-toggle[aria-expanded="true"],
+.preset-fold-toggle[aria-expanded="true"] {
+  border-color: var(--ink-2);
+  background-color: var(--paper-3);
+}
+
+/* Cards inside a flyout: each render (or SPECMotion.stagger adding --m-i)
+   cascades them. `--m-i` defaults are provided by the nth-child rules below
+   so the flyout still cascades when JS only toggles hidden. */
+.source-fold-body .source-character-list > *,
+.source-fold-body .source-preset-list > *,
+.character-fold-body .character-fold-list > *,
+.preset-fold-body .preset-list > *,
+.source-fold-body.m-stagger > *,
+.character-fold-body.m-stagger > *,
+.preset-fold-body.m-stagger > *,
+.source-fold-body .m-stagger > *,
+.character-fold-body .m-stagger > *,
+.preset-fold-body .m-stagger > * {
+  animation-name: mRiseIn;
+  animation-duration: var(--m-dur-2);
+  animation-timing-function: var(--m-ease-out);
+  animation-fill-mode: backwards;
+  animation-delay: calc(var(--m-i, 0) * 18ms);
+}
+
+.source-fold-body .source-character-list > :nth-child(2),
+.source-fold-body .source-preset-list > :nth-child(2),
+.character-fold-body .character-fold-list > :nth-child(2),
+.preset-fold-body .preset-list > :nth-child(2) { --m-i: 1; }
+
+.source-fold-body .source-character-list > :nth-child(3),
+.source-fold-body .source-preset-list > :nth-child(3),
+.character-fold-body .character-fold-list > :nth-child(3),
+.preset-fold-body .preset-list > :nth-child(3) { --m-i: 2; }
+
+.source-fold-body .source-character-list > :nth-child(4),
+.source-fold-body .source-preset-list > :nth-child(4),
+.character-fold-body .character-fold-list > :nth-child(4),
+.preset-fold-body .preset-list > :nth-child(4) { --m-i: 3; }
+
+.source-fold-body .source-character-list > :nth-child(5),
+.source-fold-body .source-preset-list > :nth-child(5),
+.character-fold-body .character-fold-list > :nth-child(5),
+.preset-fold-body .preset-list > :nth-child(5) { --m-i: 4; }
+
+/* ==========================================================================
+   3. TAG CHIPS & SENTENCE BLOCKS
+   New nodes pop in with mChipIn; the cadence comes from SPECMotion.stagger()
+   (`.m-stagger` on #tagChips / #sentenceBlocks + inline --m-i on children).
+   Sentence rows are full-width, so their pop is kept short (170ms) to stay
+   inside the "small travel" rule of the spec.
+   ========================================================================== */
+
+#tagChips.m-stagger > *,
+#tagChipsZh.m-stagger > *,
+#sentenceBlocks.m-stagger > *,
+#sentenceBlocksZh.m-stagger > * {
+  animation-name: mChipIn;
+  animation-duration: var(--m-dur-2);
+  animation-timing-function: var(--m-ease-snap);
+  animation-fill-mode: backwards;
+  animation-delay: calc(var(--m-i, 0) * 16ms);
+}
+
+/* Hover / drag lift + linked-highlight cross-fade (the .is-linked colours
+   themselves already live in styles.css, we only animate them). */
+.panel-body .blk,
+.panel-body .sent,
+.record-column .blk,
+.record-column .sent {
+  transition: background-color var(--m-dur-1) var(--m-ease-out),
+              border-color var(--m-dur-1) var(--m-ease-out),
+              color var(--m-dur-1) var(--m-ease-out),
+              box-shadow var(--m-dur-1) var(--m-ease-out),
+              transform var(--m-dur-1) var(--m-ease-snap);
+}
+
+.panel-body .blk:hover:not(.is-editing),
+.panel-body .blk:focus-visible:not(.is-editing) {
+  transform: translateY(-1px);
+}
+
+.panel-body .sent:hover:not(.is-editing),
+.panel-body .sent:focus-visible:not(.is-editing) {
+  transform: translateY(-1px);
+}
+
+.record-column .blk:hover:not(.is-editing),
+.record-column .sent:hover:not(.is-editing) {
+  transform: translateY(-1px);
+}
+
+/* Dragging / drop slot: fade instead of snapping. */
+.blk.is-dragging,
+.sent.is-dragging {
+  transition: opacity var(--m-dur-1) linear;
+}
+
+/* ==========================================================================
+   4. RECORD LISTS (#historyList / #favoriteList)
+   Children are `.record-card` (record-item naming in the brief = DOM reality
+   is `.record-card`). Stagger arrives from SPECMotion.stagger(); hover raises
+   1px and grows a left colour rail (vertical counterpart of mBarGrow, done
+   with a transition so no extra keyframe is introduced).
+   ========================================================================== */
+
+#historyList.m-stagger > *,
+#favoriteList.m-stagger > * {
+  animation-duration: var(--m-dur-3);
+  animation-delay: calc(var(--m-i, 0) * 22ms);
+}
+
+#historyList .record-card,
+#favoriteList .record-card {
+  position: relative;
+  transition: transform var(--m-dur-1) var(--m-ease-snap),
+              box-shadow var(--m-dur-1) var(--m-ease-snap),
+              border-color var(--m-dur-1) var(--m-ease-out);
+}
+
+#historyList .record-card::before,
+#favoriteList .record-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background-color: var(--c1);
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform var(--m-dur-2) var(--m-ease-out);
+  pointer-events: none;
+}
+
+#favoriteList .record-card::before { background-color: var(--c3); }
+
+#historyList .record-card:hover,
+#favoriteList .record-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--ink-2);
+  box-shadow: 0 3px 0 var(--sh-90);
+}
+
+#historyList .record-card:hover::before,
+#favoriteList .record-card:hover::before {
+  transform: scaleY(1);
+}
+
+/* ==========================================================================
+   5. GALLERY LIST (#galleryList)
+   Stagger on the cards, hover lifts the hard shadow one notch and eases the
+   preview image by 1.5% inside its overflow clip. No colour glow.
+   ========================================================================== */
+
+#galleryList.m-stagger > * {
+  animation-duration: var(--m-dur-3);
+  animation-delay: calc(var(--m-i, 0) * 30ms);
+}
+
+#galleryList .gallery-card[data-gallery-id] {
+  transition: transform var(--m-dur-1) var(--m-ease-snap),
+              box-shadow var(--m-dur-2) var(--m-ease-out),
+              border-color var(--m-dur-1) var(--m-ease-out);
+}
+
+#galleryList .gallery-card-preview img {
+  transition: transform var(--m-dur-3) var(--m-ease-out);
+}
+
+#galleryList .gallery-card[data-gallery-id]:hover {
+  transform: translateY(-1px);
+  border-color: var(--ink-2);
+  box-shadow: 0 4px 0 var(--sh-100);
+}
+
+#galleryList .gallery-card[data-gallery-id]:hover .gallery-card-preview img {
+  transform: scale(1.015);
+}
+
+/* ==========================================================================
+   6. GLOSSARY ROWS (#glossaryList)
+   Compact rows: short stagger. New-row flash is hook-ready: JS may add
+   `.is-new` / `.m-flash` on the row that was just inserted.
+   ========================================================================== */
+
+/* 只给可视行排队动画：虚拟滚动在列表里插入的 .glossary-spacer 不参与 */
+#glossaryList.m-stagger > .glossary-row {
+  animation-duration: var(--m-dur-2);
+  animation-delay: calc(var(--m-i, 0) * 14ms);
+}
+
+#glossaryList .glossary-row {
+  transition: background-color var(--m-dur-1) var(--m-ease-out);
+}
+
+#glossaryList .glossary-row.is-new,
+#glossaryList .glossary-row.m-flash {
+  animation: mMeterBlink var(--m-dur-3) linear both;
+}
+
+/* ==========================================================================
+   7. CHARACTER CARD GALLERY (#characterGalleryGrid)
+   DOM class is `.character-gallery-card` (`.character-card` in the brief).
+   ========================================================================== */
+
+#characterGalleryGrid.m-stagger > * {
+  animation-duration: var(--m-dur-3);
+  animation-delay: calc(var(--m-i, 0) * 26ms);
+}
+
+#characterGalleryGrid .character-gallery-card {
+  transition: transform var(--m-dur-1) var(--m-ease-snap),
+              box-shadow var(--m-dur-1) var(--m-ease-snap),
+              border-color var(--m-dur-1) var(--m-ease-out);
+}
+
+#characterGalleryGrid .character-gallery-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--ink-2);
+  box-shadow: 0 4px 0 var(--sh-100);
+}
+
+/* ==========================================================================
+   8. BUTTONS / INPUTS — mechanical micro-feedback
+   Hover lifts 1px (never more than 2px), press drops back, everything is a
+   transition on existing properties: no layout size is touched.
+   ========================================================================== */
+
+.btn,
+.icon-btn,
+.session-tool,
+.btn-translate,
+.block-add,
+.record-action,
+.gallery-icon-btn {
+  transition: background-color var(--m-dur-1) var(--m-ease-out),
+              border-color var(--m-dur-1) var(--m-ease-out),
+              color var(--m-dur-1) var(--m-ease-out),
+              box-shadow var(--m-dur-1) var(--m-ease-snap),
+              transform var(--m-dur-1) var(--m-ease-snap);
+}
+
+.btn:hover:not([disabled]) {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 var(--sh-130);
+}
+
+/* primary keeps its darker hard shadow while lifted */
+.btn.btn-primary:hover:not([disabled]) {
+  box-shadow: 0 3px 0 var(--sh-260);
+}
+
+.btn:active:not([disabled]) {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.icon-btn:hover {
+  transform: translateY(-1px);
+}
+
+.icon-btn:active {
+  transform: translateY(1px);
+}
+
+.session-tool:hover {
+  transform: translateY(-1px);
+}
+
+.session-tool:active {
+  transform: translateY(1px);
+}
+
+.btn-translate:hover:not([disabled]) {
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 var(--hl-280), 0 4px 0 var(--red-dark);
+}
+
+.btn-translate:active:not([disabled]) {
+  transform: translateY(3px);
+  box-shadow: inset 0 1px 0 var(--hl-200);
+}
+
+/* "+ ADD" slots inside chips / sentences and record-card actions read as the
+   same mechanical family as .btn. */
+.block-add:hover {
+  transform: translateY(-1px);
+}
+
+.block-add:active,
+.record-action:active {
+  transform: translateY(1px);
+}
+
+/* Inputs: fade the border/background instead of snapping. Sizes untouched. */
+.glossary-search input,
+.glossary-add input,
+.glossary-cell input,
+.record-title-input,
+.character-field input,
+.character-field textarea,
+.character-combo-add input,
+.character-combo-add select,
+.gallery-field input,
+.gallery-field textarea,
+.gallery-add input,
+.gallery-add textarea,
+#sourceText,
+#composerInput {
+  transition: border-color var(--m-dur-1) var(--m-ease-out),
+              background-color var(--m-dur-1) var(--m-ease-out),
+              box-shadow var(--m-dur-2) var(--m-ease-out);
+}
+
+/* Borderless editors get a hard left rail on focus (inset shadow, no layout
+   change) so focus reads the same mechanical way as the bordered inputs. */
+#sourceText:focus,
+#composerInput:focus {
+  box-shadow: inset 2px 0 0 var(--c3);
+}
+
+/* Unsaved marker: mPopIn every time JS clears `hidden` on it. */
+.dirty-flag {
+  animation: mPopIn var(--m-dur-2) var(--m-ease-out) both;
+}
+
+/* Counter refresh flash — hook-ready: JS may add `.m-flash` to .st-badge. */
+.st-badge.m-flash {
+  animation: mMeterBlink var(--m-dur-3) linear both;
+}
+
+/* ==========================================================================
+   9. PANEL-C STATUS STRIP
+   #targetStatus is toggled with `hidden` while a translation runs; a short
+   drop-in makes the state change readable without touching layout.
+   ========================================================================== */
+
+.target-status {
+  animation: mDropIn var(--m-dur-2) var(--m-ease-out) backwards;
+}
+
+/* ==========================================================================
+   10. REDUCED MOTION — instant switching, no travel (spec §9).
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  #panels,
+  #panels > .panel,
+  .target-status,
+  .dirty-flag,
+  #glossaryList .glossary-row.is-new,
+  #glossaryList .glossary-row.m-flash,
+  .st-badge.m-flash,
+  .source-fold-body .source-character-list > *,
+  .source-fold-body .source-preset-list > *,
+  .character-fold-body .character-fold-list > *,
+  .preset-fold-body .preset-list > *,
+  .source-fold-body.m-stagger > *,
+  .character-fold-body.m-stagger > *,
+  .preset-fold-body.m-stagger > *,
+  .source-fold-body .m-stagger > *,
+  .character-fold-body .m-stagger > *,
+  .preset-fold-body .m-stagger > *,
+  #tagChips.m-stagger > *,
+  #tagChipsZh.m-stagger > *,
+  #sentenceBlocks.m-stagger > *,
+  #sentenceBlocksZh.m-stagger > * {
+    animation: none !important;
+  }
+
+  .source-fold-arrow,
+  .character-fold-arrow,
+  .preset-fold-arrow,
+  .source-fold-toggle,
+  .character-fold-toggle,
+  .preset-fold-toggle,
+  .panel-body .blk,
+  .panel-body .sent,
+  .record-column .blk,
+  .record-column .sent,
+  .blk.is-dragging,
+  .sent.is-dragging,
+  #historyList .record-card,
+  #favoriteList .record-card,
+  #historyList .record-card::before,
+  #favoriteList .record-card::before,
+  #galleryList .gallery-card[data-gallery-id],
+  #galleryList .gallery-card-preview img,
+  #glossaryList .glossary-row,
+  #characterGalleryGrid .character-gallery-card,
+  .btn,
+  .icon-btn,
+  .session-tool,
+  .btn-translate,
+  .block-add,
+  .record-action,
+  .gallery-icon-btn,
+  .glossary-search input,
+  .glossary-add input,
+  .glossary-cell input,
+  .record-title-input,
+  .character-field input,
+  .character-field textarea,
+  .character-combo-add input,
+  .character-combo-add select,
+  .gallery-field input,
+  .gallery-field textarea,
+  .gallery-add input,
+  .gallery-add textarea,
+  #sourceText,
+  #composerInput {
+    transition: none !important;
+  }
+
+  /* the inset accent rail is a transition effect; without animation the two
+     borderless editors would lose every focus cue, so swap in a real ring */
+  #sourceText:focus,
+  #composerInput:focus {
+    box-shadow: none !important;
+    outline: 2px solid var(--focus-line);
+    outline-offset: -2px;
+  }
+
+  .panel-body .blk:hover:not(.is-editing),
+  .panel-body .blk:focus-visible:not(.is-editing),
+  .panel-body .sent:hover:not(.is-editing),
+  .panel-body .sent:focus-visible:not(.is-editing),
+  .record-column .blk:hover:not(.is-editing),
+  .record-column .sent:hover:not(.is-editing),
+  #historyList .record-card:hover,
+  #favoriteList .record-card:hover,
+  #historyList .record-card:hover::before,
+  #favoriteList .record-card:hover::before,
+  #galleryList .gallery-card[data-gallery-id]:hover,
+  #galleryList .gallery-card[data-gallery-id]:hover .gallery-card-preview img,
+  #characterGalleryGrid .character-gallery-card:hover,
+  .btn:hover:not([disabled]),
+  .btn:active:not([disabled]),
+  .icon-btn:hover,
+  .icon-btn:active,
+  .session-tool:hover,
+  .session-tool:active,
+  .btn-translate:hover:not([disabled]),
+  .btn-translate:active:not([disabled]),
+  .block-add:hover,
+  .block-add:active,
+  .record-action:active {
+    transform: none !important;
+  }
+}

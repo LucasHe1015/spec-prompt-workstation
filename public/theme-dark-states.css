@@ -1,0 +1,183 @@
+/* ==========================================================================
+   S.P.E.C. 7 // DARK THEME — INTERACTION STATES
+   The last theme layer: hover / focus-visible / selected / pending / editing
+   feedback on the night-shift console.
+
+   Scope: every rule is prefixed with html[data-theme="dark"], so the light
+   console is pixel-identical. Only colour, background, border, box-shadow,
+   outline and opacity are set — no size, layout, type or new animation.
+   Colour values are the tokens already remapped by theme-dark.css; the only
+   literals are two status-red steps (#F0705A lift, #B92E22 press) because a
+   dark console needs its own red ramp for legible state cues.
+
+   Loaded right after theme-dark.css (see index.html), so it also carries the
+   dark counterparts of a few state colours that a motion file hard-codes.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. NATIVE SURFACES — selection, placeholders, scrollbars
+   ========================================================================== */
+
+/* Keep the light console's marker-pen gesture: sand block, dark ink.
+   Two corrections were needed on a dark console:
+   1. The paper-ink-on-`--select-bg` wash (#3A3221) reads fine as text
+      contrast (9.6:1) but that wash is only a hair lighter than the editor
+      surfaces (--face-edit #2A2617), so a mouse drag inside a segment/text box
+      looked unselected. Highlight must stand off the surface it sits on.
+   2. The light --c3 (#E3C077) fixes (1) but startles — 8.7:1 against the
+      editor, a hard bright block. `--selection-bg` (#B39A5C) is the same sand
+      hue one step darker: 5.4–6.5:1 against all dark surfaces, ink 7.25:1. */
+html[data-theme="dark"] ::selection {
+  background-color: var(--selection-bg);
+  color: var(--on-color-block);
+}
+
+/* --line-3 on a dark input is ~3.2:1. Lift to --ink-3: still clearly quieter
+   than --ink, but a legible hint. The two borderless editors carry id-weight
+   placeholder rules in styles.css, so they are named explicitly. */
+html[data-theme="dark"] ::placeholder {
+  color: var(--ink-3);
+}
+html[data-theme="dark"] #sourceText::placeholder,
+html[data-theme="dark"] #composerInput::placeholder {
+  color: var(--ink-3);
+}
+
+/* Scrollbar: --line-2 reads as a dark seam on dark paper; --line-3 is the
+   visible groove, --ink-3 the grabbed thumb. The root element is named too,
+   because `html[data-theme] *` does not match <html> itself. */
+html[data-theme="dark"],
+html[data-theme="dark"] * {
+  scrollbar-color: var(--line-3) transparent;
+}
+html[data-theme="dark"]::-webkit-scrollbar-thumb,
+html[data-theme="dark"] *::-webkit-scrollbar-thumb {
+  background-color: var(--line-3);
+  background-clip: content-box;
+  border: 3px solid transparent;
+}
+html[data-theme="dark"]::-webkit-scrollbar-thumb:hover,
+html[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
+  background-color: var(--ink-3);
+  background-clip: content-box;
+  border: 3px solid transparent;
+}
+
+/* ==========================================================================
+   2. FOCUS-VISIBLE — the borderless create editor
+   styles.css sets outline:none on most fields but repaints their border on
+   :focus, so they read. The character-create textarea is borderless and has no
+   focus rule at all; give it the same hard 2px console ring as everything else.
+   (#characterSelect is a hidden helper and keeps the UA ring.)
+   ========================================================================== */
+
+html[data-theme="dark"] .character-create textarea:focus-visible {
+  outline: 2px solid var(--focus-line);
+  outline-offset: -2px;
+}
+
+/* motion-panels.css marks the borderless editors with an inset left rail on
+   :focus, but drops that rail under reduced motion — restore a ring there. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="dark"] #sourceText:focus-visible,
+  html[data-theme="dark"] #composerInput:focus-visible {
+    outline: 2px solid var(--focus-line);
+    outline-offset: -2px;
+  }
+}
+
+/* ==========================================================================
+   3. HOVER — the generic "hover surface" step
+   In the light ramp controls hover from --paper-2/--paper-3 up to near-white
+   (~1.2x). On dark paper the same token step is only ~1.7 ΔE, so controls that
+   carry no border change used to hover "to nothing". --face-bright-hover is the
+   token made for this: one visible step above the panel, no glow.
+   ========================================================================== */
+
+html[data-theme="dark"] .btn:hover:not([disabled]):not(.btn-primary):not(.btn-ghost):not(.btn-clear),
+html[data-theme="dark"] .btn-ghost:hover:not([disabled]),
+html[data-theme="dark"] .icon-btn:hover:not(.alert-close),
+html[data-theme="dark"] .rack-btn:hover:not(.is-active),
+html[data-theme="dark"] .engine-chip:hover {
+  background-color: var(--face-bright-hover);
+}
+
+/* Engine-bay config rows: motion-overlays.css hard-codes the *light* paper
+   veil rgba(243,238,226,.78) for the summary hover. On dark paper that paints
+   near-white behind near-white text (9:1 → 1:1). Re-place it on the dark
+   hover surface; the open row keeps its own veil from styles.css. */
+html[data-theme="dark"] .cfg summary:hover {
+  background-color: var(--face-bright);
+  color: var(--ink);
+}
+
+/* Glossary rows: the light veil hover lands at ΔE 0.3 on dark paper. Mark the
+   hovered row with the surface step instead. */
+html[data-theme="dark"] .glossary-row:hover {
+  background-color: var(--face-bright);
+}
+
+/* ==========================================================================
+   4. HOVER — the red states
+   Two different dark-red problems: red *text* on a red wash collapses to
+   ~3:1, and theme.css lifts a few hover glyphs to #F0705A on surfaces that
+   are themselves --red (1.6:1). Both keep their designed wash/border; only
+   the glyph/surface pair is corrected.
+   ========================================================================== */
+
+/* red glyph on the red wash: lift to the dark-theme red accent already used by
+   theme.css for failed/offline labels. */
+html[data-theme="dark"] .hw-unload-btn:hover,
+html[data-theme="dark"] .st-close:hover,
+html[data-theme="dark"] .record-del:hover,
+html[data-theme="dark"] .glossary-del:hover,
+html[data-theme="dark"] .gallery-delete:hover,
+html[data-theme="dark"] .character-group-tag-remove:hover,
+html[data-theme="dark"] #characterDeleteBtn:hover,
+html[data-theme="dark"] .btn-clear:hover,
+html[data-theme="dark"] .btn-clear:hover .btn-sub {
+  color: #F0705A;
+}
+
+/* these icon buttons invert to a --red surface on hover; theme.css lifts their
+   glyph to #F0705A at the same time, which is 1.6:1 on red. Put the paper
+   glyph back (4.1:1, and a × glyph only needs 3:1). */
+html[data-theme="dark"] .preset-card-delete:hover,
+html[data-theme="dark"] .cg-delete:hover,
+html[data-theme="dark"] .wardrobe-card-delete:hover,
+html[data-theme="dark"] .character-group-delete:hover {
+  color: var(--on-accent);
+}
+
+/* --red-hover is *lighter* than --red in the dark ramp, so hovering the red
+   launch/confirm buttons dropped their paper label to 3.5:1. The light console
+   darkens red on hover; step down to a mid dark red instead (5.3:1). */
+html[data-theme="dark"] .btn-translate:hover:not([disabled]),
+html[data-theme="dark"] .confirm-delete-btn:hover {
+  background-color: #B92E22;
+  color: var(--on-accent);
+}
+
+/* neutral confirm button: its hover token (ink-on-primary) is 1.09 ΔE above
+   ink in dark (light gets 1.37), i.e. no feedback. Step to ink-2: obvious, and
+   the paper label keeps 7.9:1. */
+html[data-theme="dark"] .confirm-delete-btn.is-neutral:hover {
+  background-color: var(--ink-2);
+}
+
+/* ==========================================================================
+   5. SELECTED / PENDING / EDITING
+   ========================================================================== */
+
+/* Pending blocks: styles.css stripes them with --face-hover / --face-hover-2,
+   tokens that are defined nowhere, so the wash is dropped (in both themes —
+   reported to the Lead). Rebuild the dark stripes from the real dark faces:
+   the block's own sunk/block surface plus a 9.8% paper highlight, one step
+   visible on the night paper exactly like the light theme's near-white stripes. */
+html[data-theme="dark"] .blk.is-pending {
+  background-image: repeating-linear-gradient(
+    115deg,
+    transparent 0 7px,
+    var(--hl-700) 7px 14px
+  );
+}

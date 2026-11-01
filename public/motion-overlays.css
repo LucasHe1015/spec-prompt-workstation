@@ -1,0 +1,317 @@
+/* ==========================================================================
+   S.P.E.C. 7 // MOTION OVERLAYS
+   Owner: overlay-motion.  Additive only — no element is resized or repositioned,
+   the static (nothing-open) frame is identical to styles.css.
+
+   Covers: engine-bay modal (+ details.cfg), confirm dialog, toast, #alert,
+   #presetHoverPop / #characterHoverPop, #characterPickerPanel, #helpPop,
+   #bootError.
+
+   Contract with app.js: SPECMotion adds `.m-enter .m-enter-*` on OPEN and
+   `.m-leave .m-leave-*` on CLOSE (and only sets `hidden` after the leave
+   animation).  Everything below therefore keys off those two state classes
+   plus the generic variants, so any enter/leave flavour the JS picks works.
+   Timing / easing tokens + mFadeIn/mPopIn/mDropIn/... come from motion-core.css.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Private keyframes
+   The shared sheets only animate `transform`; these two small helpers animate
+   the independent `translate` property instead, so a pop / shake can be given
+   a mechanical Y nudge without fighting the transform-based keyframes or the
+   translate(-50%) centering that styles.css already uses (toast, hover pops).
+   -------------------------------------------------------------------------- */
+
+@keyframes ovlBayNudge {
+  from { translate: 0 8px; }
+  to   { translate: 0 0; }
+}
+
+@keyframes ovlToastShake {
+  0%, 100% { translate: 0 0; }
+  18%      { translate: -3px 0; }
+  38%      { translate: 3px 0; }
+  58%      { translate: -2px 0; }
+  78%      { translate: 1px 0; }
+}
+
+/* ==========================================================================
+   1. ENGINE BAY MODAL  (#modalBackdrop > .modal)
+   Backdrop fades (it must never scale — it is the full-viewport plate), the
+   card pops from 6% smaller + 8px low, and the four-colour instrument bar on
+   top grows out from the left edge.
+   ========================================================================== */
+
+/* Kill the static `animation: fadeIn .12s` from styles.css: after motion.js
+   removes `.m-enter` the animation-name would change back and replay a 120ms
+   fade (visible flash on an already visible backdrop). */
+.modal-backdrop {
+  animation-name: none;
+}
+.modal-backdrop.m-enter,
+.modal-backdrop.m-leave {
+  animation-fill-mode: both;
+}
+.modal-backdrop.m-enter { animation-name: mFadeIn; }
+.modal-backdrop.m-leave { animation-name: mFadeOut; }
+
+.modal-backdrop .modal {
+  transform-origin: 50% 45%;
+}
+
+.modal-backdrop.m-enter .modal {
+  animation:
+    mPopIn var(--m-dur-3) var(--m-ease-out) both,
+    ovlBayNudge var(--m-dur-3) var(--m-ease-out) both;
+}
+.modal-backdrop.m-leave .modal {
+  animation:
+    mPopOut var(--m-dur-2) var(--m-ease-in) both,
+    ovlBayNudge var(--m-dur-2) var(--m-ease-in) reverse both;
+}
+
+.modal-backdrop.m-enter .modal::before {
+  animation: mBarGrow var(--m-dur-3) var(--m-ease-out) both;
+  transform-origin: 0 50%;
+}
+
+/* ==========================================================================
+   2. ENGINE BAY COLLAPSIBLE CONFIG  (details.cfg)
+   Arrow drawn with ::after (the markup has no arrow element), rotated 180°
+   with a transition; the body unrolls with a real height transition where
+   supported, its rows cascade in as the drawer opens.  Native <details>
+   still owns open/close, so a collapsed body is never interactive.
+   ========================================================================== */
+
+/* summary hover feedback — mechanical, no layout change */
+.cfg summary {
+  transition:
+    background-color var(--m-dur-1) var(--m-ease-out),
+    color var(--m-dur-1) var(--m-ease-out);
+}
+.cfg summary:hover {
+  background-color: var(--veil-y-780);
+}
+
+/* disclosure chevron */
+.cfg summary::after {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-left: -5px;
+  border-right: 1.5px solid var(--ink-3);
+  border-bottom: 1.5px solid var(--ink-3);
+  transform: translateY(-2px) rotate(45deg);
+  transition:
+    transform var(--m-dur-2) var(--m-ease-out),
+    border-color var(--m-dur-1) linear;
+}
+.cfg[open] summary::after {
+  transform: translateY(1px) rotate(-135deg);
+  border-color: var(--ink-2);
+}
+
+/* height unroll (Chrome 131+ ::details-content; silently skipped elsewhere) */
+@supports selector(::details-content) {
+  .cfg {
+    interpolate-size: allow-keywords;
+  }
+  .cfg::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition:
+      block-size var(--m-dur-3) var(--m-ease-out),
+      content-visibility var(--m-dur-3) allow-discrete;
+  }
+  .cfg[open]::details-content {
+    block-size: auto;
+  }
+}
+
+/* rows cascade in when the drawer opens (also restarts after a re-open) */
+.cfg[open] .cfg-body > * {
+  animation: mRiseIn var(--m-dur-2) var(--m-ease-out) both;
+}
+.cfg[open] .cfg-body > :nth-child(2) { animation-delay: var(--m-delay-step); }
+.cfg[open] .cfg-body > :nth-child(3) { animation-delay: calc(var(--m-delay-step) * 2); }
+.cfg[open] .cfg-body > :nth-child(n+4) { animation-delay: calc(var(--m-delay-step) * 3); }
+
+/* ==========================================================================
+   3. CONFIRM DIALOG  (#confirmBackdrop > .confirm-card)
+   Same plate-fade + card-pop language as the engine bay.
+   ========================================================================== */
+
+.confirm-backdrop.m-enter { animation-name: mFadeIn; animation-fill-mode: both; }
+.confirm-backdrop.m-leave { animation-name: mFadeOut; animation-fill-mode: both; }
+
+/* `backdrop-filter: blur()` must not be scaled — keep the plate flat. */
+.confirm-backdrop .confirm-card {
+  transform-origin: 50% 50%;
+}
+.confirm-backdrop.m-enter .confirm-card {
+  animation:
+    mPopIn var(--m-dur-3) var(--m-ease-out) both,
+    ovlBayNudge var(--m-dur-3) var(--m-ease-out) both;
+}
+.confirm-backdrop.m-leave .confirm-card {
+  animation:
+    mPopOut var(--m-dur-2) var(--m-ease-in) both,
+    ovlBayNudge var(--m-dur-2) var(--m-ease-in) reverse both;
+}
+
+/* ==========================================================================
+   4. TOAST  (#toast)
+   Keeps the `.is-visible` semantics and the transition from styles.css, only
+   deepens it: 16px rise + 2.8% scale.  Error toasts get one shake; the shake
+   animates `translate` (not `transform`) so the -50% centering and the
+   hide/show transition are never disturbed.  Any m-enter/m-leave class the
+   JS adds is neutralised — a transform animation would break the centering.
+   ========================================================================== */
+
+.toast {
+  transform: translate(-50%, 16px) scale(0.972);
+  transition:
+    opacity var(--m-dur-2) var(--m-ease-out),
+    transform var(--m-dur-2) var(--m-ease-out);
+}
+.toast.is-visible {
+  transform: translate(-50%, 0) scale(1);
+}
+.toast.m-enter,
+.toast.m-leave {
+  animation: none;
+}
+.toast.is-error.is-visible {
+  animation: ovlToastShake 340ms var(--m-ease-snap) 1 both;
+}
+
+/* ==========================================================================
+   5. ALERT STRIP  (#alert)
+   Drops down from the panel top, retracts upwards; the striped hazard border
+   gives one short sweep and the ALERT code blinks once.
+   ========================================================================== */
+
+#alert {
+  transform-origin: 50% 0;
+}
+#alert.m-enter { animation-name: mDropIn; }
+#alert.m-leave { animation-name: mDropOut; }
+
+#alert.m-enter .alert-stripe {
+  animation: hazardMove var(--m-dur-4) linear 1;
+}
+#alert.m-enter .alert-code {
+  animation: mMeterBlink var(--m-dur-3) var(--m-ease-out) 1;
+}
+
+/* ==========================================================================
+   6. HOVER POPS  (#presetHoverPop / #characterHoverPop)
+   Rise in over --m-dur-2, growing out of the bottom-left corner (the card the
+   pop belongs to).  left/top stay fully owned by app.js' positioning code.
+   ========================================================================== */
+
+#presetHoverPop,
+#characterHoverPop {
+  transform-origin: 0 100%;
+}
+#presetHoverPop.m-enter,
+#characterHoverPop.m-enter {
+  animation-duration: var(--m-dur-2);
+}
+#presetHoverPop.m-leave,
+#characterHoverPop.m-leave {
+  animation-duration: var(--m-dur-2);
+}
+
+/* ==========================================================================
+   7. CHARACTER PICKER PANEL  (#characterPickerPanel)
+   Drops out of the trigger, its rows cascade (`.m-stagger` comes from
+   SPECMotion.stagger).
+   ========================================================================== */
+
+.character-picker-panel {
+  transform-origin: 50% 0;
+}
+.character-picker-panel.m-enter {
+  animation-duration: var(--m-dur-3);
+}
+.character-picker-panel .m-stagger > * {
+  animation-duration: var(--m-dur-2);
+}
+
+/* ==========================================================================
+   8. HELP POPOVER  (#helpPop)
+   Comes in from the right, hanging off its top-right corner.
+   app.js still toggles this one purely with `hidden` (no m-enter hook), and an
+   element that goes display:none -> shown restarts its CSS animation, so the
+   enter animation can be driven by the visible state directly.  Closing is
+   intentionally instant (outside-click must feel immediate).
+   ========================================================================== */
+
+.help-pop {
+  transform-origin: 100% 0;
+}
+.help-pop:not([hidden]) {
+  animation: mSlideInRight var(--m-dur-3) var(--m-ease-out) both;
+}
+.help-pop.m-enter {
+  animation-duration: var(--m-dur-3);
+}
+
+/* ==========================================================================
+   9. BOOT ERROR  (#bootError)
+   Plate fades, card drops.  Shown only when the station has no service; same
+   `hidden`-driven fallback as the help popover (app.js sets it directly).
+   ========================================================================== */
+
+.boot-error:not([hidden]) {
+  animation: mFadeIn var(--m-dur-3) var(--m-ease-out) both;
+}
+.boot-error .boot-error-card {
+  transform-origin: 50% 0;
+}
+.boot-error:not([hidden]) .boot-error-card {
+  animation: mDropIn var(--m-dur-3) var(--m-ease-out) both;
+}
+.boot-error.m-enter {
+  animation-name: mFadeIn;
+  animation-fill-mode: both;
+}
+.boot-error.m-enter .boot-error-card {
+  animation: mDropIn var(--m-dur-3) var(--m-ease-out) both;
+}
+
+/* ==========================================================================
+   Reduced motion — everything this sheet adds degrades to an instant switch.
+   (motion-core already neutralises the shared .m-enter/.m-leave classes; the
+   per-child animations above have to be switched off here.)
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop.m-enter .modal,
+  .modal-backdrop.m-leave .modal,
+  .modal-backdrop.m-enter .modal::before,
+  .confirm-backdrop.m-enter .confirm-card,
+  .confirm-backdrop.m-leave .confirm-card,
+  .cfg[open] .cfg-body > *,
+  .toast.is-error.is-visible,
+  #alert.m-enter .alert-stripe,
+  #alert.m-enter .alert-code,
+  .help-pop:not([hidden]),
+  .boot-error:not([hidden]),
+  .boot-error:not([hidden]) .boot-error-card,
+  .boot-error.m-enter .boot-error-card {
+    animation: none !important;
+  }
+  .toast,
+  .toast.is-visible {
+    transition: none !important;
+    transform: translate(-50%, 0);
+  }
+  .cfg summary,
+  .cfg summary::after,
+  .cfg::details-content {
+    transition: none !important;
+  }
+}

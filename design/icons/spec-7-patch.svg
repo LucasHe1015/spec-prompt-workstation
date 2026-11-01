@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="S.P.E.C. 7 mission patch">
+  <title>S.P.E.C. 7 mission patch</title>
+  <circle cx="60" cy="60" r="57" fill="#ECE5D6"/>
+  <g fill="none" stroke-width="8">
+    <path d="M60 7A53 53 0 0 1 113 60" stroke="#4C5A68"/>
+    <path d="M113 60A53 53 0 0 1 60 113" stroke="#7A7F4E"/>
+    <path d="M60 113A53 53 0 0 1 7 60" stroke="#D2A85E"/>
+    <path d="M7 60A53 53 0 0 1 60 7" stroke="#A8432F"/>
+  </g>
+  <circle cx="60" cy="60" r="44.5" fill="none" stroke="#221F18" stroke-width="1"/>
+  <text x="60" y="34" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="8" font-weight="700" letter-spacing="1.2" fill="#221F18">S.P.E.C.</text>
+  <path d="M22.91 74.98C21.74 72.07 24.56 67.56 30.6 62.73C36.63 57.89 45.8 52.8 55.5 48.87C65.21 44.95 75.35 42.25 83.05 41.54C90.74 40.82 95.91 42.1 97.09 45.02" fill="none" stroke="#221F18" stroke-width="0.9"/>
+  <circle cx="95.74" cy="43.31" r="3.6" fill="#221F18"/>
+  <g transform="translate(48.11 49.15) scale(1.03)"><path d="M0 0H23L9 35.5" fill="none" stroke="#D63A2C" stroke-width="9" stroke-linejoin="round" stroke-linecap="butt"/></g>
+  <path d="M97.09 45.02C98.26 47.93 95.44 52.44 89.4 57.27C83.37 62.11 74.2 67.2 64.5 71.13C54.79 75.05 44.65 77.75 36.95 78.46C29.26 79.18 24.09 77.9 22.91 74.98" fill="none" stroke="#221F18" stroke-width="0.9"/>
+  <circle cx="29.36" cy="78.45" r="2.1" fill="#221F18"/>
+  <circle cx="79.75" cy="63.75" r="1.5" fill="#221F18"/>
+  <circle cx="60" cy="60" r="57" fill="none" stroke="#221F18" stroke-width="1.6"/>
+</svg>

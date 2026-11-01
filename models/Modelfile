@@ -1,0 +1,1 @@
+FROM ./translategemma-4b-it-Q8_0.gguf

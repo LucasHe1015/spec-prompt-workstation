@@ -1,0 +1,193 @@
+/* ==========================================================================
+   S.P.E.C. 7 // DARK THEME
+   Night-shift console: same NASA-punk language, warm charcoal paper,
+   one vivid accent (red) kept intact. Light values live in styles.css;
+   every colour there is a semantic token so this file only remaps them.
+   Toggle: [data-theme="dark"] on <html>, driven by public/theme.js.
+   ========================================================================== */
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* --- core palette --- */
+  --paper: #15140F;
+  --paper-2: #1C1A14;
+  --paper-3: #23211A;
+  --panel: #1F1D17;
+  --panel-b: #1D1B15;
+  --panel-c: #22201A;
+  --ink: #E8E0CD;
+  --ink-2: #C4BBA5;
+  --ink-3: #A69D89;
+  --line: #332F27;
+  --line-2: #464137;
+  --line-3: #6E6759;
+  --red: #D63A2C;
+  --red-dark: #7C1E14;
+  --red-wash: #35201A;
+  --select-bg: #3A3221;
+  /* Text-selection fill. Not the light-mode --c3 (#E3C077): that much lit sand
+     startles on a dark console. #B39A5C keeps the same sand hue but sits one
+     step darker, so it still separates from every dark surface (5.4:1 against
+     the lightest tab face, 6.5:1 against sunken inputs) while the on-block ink
+     stays at 7.25:1. Selection = --selection-bg + --on-color-block, see
+     theme-dark-states.css. */
+  --selection-bg: #B39A5C;
+  --select-line: #C2543C;
+  --select-wash: #33231C;
+  --focus-line: #8FA0B4;
+  --c1: #8C9CAD;
+  --c2: #A3AB6D;
+  --c3: #E3C077;
+  --c4: #CD684E;
+  --ok: #98A067;
+  --grid: rgba(232, 224, 205, 0.045);
+  --rivet: #4A4538;
+  --rivet-ring: #2A2721;
+  --c1: #8C9CAD;
+  --c2: #A3AB6D;
+  --c3: #E3C077;
+  --c4: #CD684E;
+  --panel-c: #22201A;
+
+  /* --- semantic surfaces --- */
+  --face-card: #25221B;
+  --face-bright-hover: #302D24;
+  --on-accent: #FFFCF4;
+  --ink-hand: #C08A6E;
+  --face-sticker: #332E22;
+  --face-bright: #2B2820;
+  --ink-on-primary: #F3EDDD;
+  --face-sunk: #201E18;
+  --face-block: #262319;
+  --face-sent: #232019;
+  --red-hover: #B92E22;
+  --face-input: #1A1813;
+  --toast-border-err: #40100B;
+  --face-edit: #2A2617;
+  --face-edit-2: #2C2718;
+  --face-card-2: #24211A;
+  --face-hover: #2B2820;
+  --face-hover-2: #2D2A22;
+  --alert-stripe: #2A1F19;
+
+  /* --- translucent paper veils --- */
+  --veil-w-930: rgba(32, 29, 23, 0.93);
+  --veil-w-600: rgba(32, 29, 23, 0.6);
+  --veil-y-700: rgba(32, 29, 23, 0.7);
+  --veil-p-650: rgba(32, 29, 23, 0.65);
+  --veil-y-600: rgba(32, 29, 23, 0.6);
+  --veil-x-600: rgba(32, 29, 23, 0.6);
+  --veil-y-550: rgba(32, 29, 23, 0.55);
+  --veil-y-500: rgba(32, 29, 23, 0.5);
+  --veil-z-700: rgba(32, 29, 23, 0.7);
+  --veil-q-550: rgba(32, 29, 23, 0.55);
+  --veil-z-580: rgba(32, 29, 23, 0.58);
+  --veil-x-550: rgba(32, 29, 23, 0.55);
+  --veil-r-900: rgba(32, 29, 23, 0.9);
+  --veil-w-550: rgba(32, 29, 23, 0.55);
+  --veil-r-550: rgba(32, 29, 23, 0.55);
+  --veil-r-880: rgba(32, 29, 23, 0.88);
+  --veil-y-720: rgba(32, 29, 23, 0.72);
+  --veil-w-450: rgba(32, 29, 23, 0.45);
+  --veil-z-550: rgba(32, 29, 23, 0.55);
+  --veil-y-780: rgba(32, 29, 23, 0.78);
+
+  /* --- ink shades (hairlines / shadows) --- */
+  --sh-100: rgba(0, 0, 0, 0.172);
+  --sh-22: rgba(0, 0, 0, 0.047);
+  --sh-50: rgba(0, 0, 0, 0.092);
+  --sh-120: rgba(0, 0, 0, 0.204);
+  --sh-180: rgba(0, 0, 0, 0.3);
+  --sh-280: rgba(0, 0, 0, 0.46);
+  --sh-70: rgba(0, 0, 0, 0.124);
+  --sh-140: rgba(0, 0, 0, 0.236);
+  --sh-55: rgba(0, 0, 0, 0.1);
+  --sh-220: rgba(0, 0, 0, 0.364);
+  --sh-80: rgba(0, 0, 0, 0.14);
+  --sh-60: rgba(0, 0, 0, 0.108);
+  --sh-200: rgba(0, 0, 0, 0.332);
+  --sh-240: rgba(0, 0, 0, 0.396);
+  --sh-160: rgba(0, 0, 0, 0.268);
+  --sh-550: rgba(0, 0, 0, 0.892);
+  --sh-720: rgba(0, 0, 0, 1);
+  --sh-90: rgba(0, 0, 0, 0.156);
+  --sh-260: rgba(0, 0, 0, 0.428);
+  --sh-130: rgba(0, 0, 0, 0.22);
+
+  /* --- white highlights --- */
+  --hl-500: rgba(255, 255, 255, 0.07);
+  --hl-600: rgba(255, 255, 255, 0.084);
+  --hl-700: rgba(255, 255, 255, 0.098);
+  --hl-650: rgba(255, 255, 255, 0.091);
+  --hl-620: rgba(255, 255, 255, 0.087);
+  --hl-420: rgba(255, 255, 255, 0.059);
+  --hl-550: rgba(255, 255, 255, 0.077);
+  --hl-400: rgba(255, 255, 255, 0.056);
+  --hl-280: rgba(255, 255, 255, 0.039);
+  --hl-200: rgba(255, 255, 255, 0.028);
+  --hl-350: rgba(255, 255, 255, 0.049);
+
+  /* --- accent washes --- */
+  --line3-a-140: rgba(150, 142, 126, 0.14);
+  --c4-a-200: rgba(192, 85, 61, 0.28);
+  --c4-a-160: rgba(192, 85, 61, 0.224);
+  --sand-a-160: rgba(221, 185, 111, 0.2);
+  --red-a-70: rgba(226, 72, 55, 0.154);
+  --red-a-450: rgba(226, 72, 55, 0.99);
+  --red-a-700: rgba(226, 72, 55, 1);
+  --red-a-80: rgba(226, 72, 55, 0.176);
+  --sand-a-550: rgba(221, 185, 111, 0.688);
+  --sand-a-0: rgba(221, 185, 111, 0);
+  --sand-a-500: rgba(221, 185, 111, 0.625);
+  --red-a-400: rgba(226, 72, 55, 0.88);
+  --c1-a-100: rgba(123, 139, 157, 0.15);
+  --sand-a-200: rgba(221, 185, 111, 0.25);
+  --sand-a-80: rgba(221, 185, 111, 0.1);
+
+  /* --- scrims and hard shadows --- */
+  --scrim-s-420: rgba(0, 0, 0, 0.6);
+  --shadow-a-350: rgba(0, 0, 0, 0.56);
+  --shadow-b-280: rgba(0, 0, 0, 0.42);
+  --shadow-b-250: rgba(0, 0, 0, 0.375);
+  --shadow-b-300: rgba(0, 0, 0, 0.45);
+  --scrim-s-720: rgba(0, 0, 0, 0.9);
+
+  /* --- dark-theme-only tokens --- */
+  --on-color-block: #0B0A07;
+}
+
+/* ---------------------------- paper grain ------------------------------- */
+/* light mode mutates the grain with multiply; on dark paper the same noise
+   has to lift highlights instead, otherwise the page reads as dirty film. */
+html[data-theme="dark"] body::after {
+  mix-blend-mode: screen;
+  opacity: 0.045;
+}
+
+/* ------------------------- textured decorations ------------------------- */
+html[data-theme="dark"] .workspace::after { opacity: 0.28; }
+html[data-theme="dark"] .watermark { opacity: 0.042; }
+
+/* mission patch and stickers stay light paper objects: give them a hard
+   dark edge so they read as physical stickers on a dark panel. */
+html[data-theme="dark"] .patch {
+  filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.85)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+}
+html[data-theme="dark"] .sticker {
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+}
+
+/* photos: cool them down a notch so they do not glow against the dark paper */
+html[data-theme="dark"] .character-portrait img,
+html[data-theme="dark"] .character-gallery-card img,
+html[data-theme="dark"] .gallery-card-preview img,
+html[data-theme="dark"] .wardrobe-card-preview img,
+html[data-theme="dark"] .wardrobe-preview img,
+html[data-theme="dark"] .gallery-preview img {
+  filter: brightness(0.94) saturate(0.96);
+}
+
+/* --------------------------- theme toggle icon -------------------------- */
+/* icon cross-fade lives in theme.css so it can animate in both directions */
+

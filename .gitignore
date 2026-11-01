@@ -1,0 +1,40 @@
+# Local configuration and credentials
+/config.json
+/config.json.tmp
+/.env
+/.env.*
+!/.env.example
+
+# Private prompts, records, images and screenshots
+/user_data/
+/screenshots/
+# Editable glossary may contain private custom terms; source exporter creates an empty one.
+/data/glossary.json
+/data/glossary.json.tmp
+
+# Local model weights and generated sharing archives
+/models/*.gguf
+/dist/
+
+# Packed launcher and release bundles — shipped through GitHub Releases, not git
+/SPEC7.exe
+/publish/
+
+# Local scratch space, rename backups and one-shot migration scripts
+/.tmp/
+/.rename-backup-*/
+/.rename-*.mjs
+/.rename_*.py
+/.fix-*.mjs
+
+# Front-end backup copies and transient data notes
+/public/*.bak-*
+/data/_miss_tmp.txt
+
+# Runtime / editor artifacts
+__pycache__/
+*.py[cod]
+*.log
+.venv/
+.vscode/
+.idea/

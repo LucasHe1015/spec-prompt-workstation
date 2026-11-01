@@ -1,0 +1,14 @@
+S.P.E.C. 7 (Station for Prompt Editing & Composition)
+Copyright (C) 2026 LucasHe1015
+SPDX-License-Identifier: GPL-3.0-or-later
+
+S.P.E.C. 7 (Station for Prompt Editing & Composition) 的原创源代码、界面设计与文档由 LucasHe1015 开发并维护。
+
+任何再分发（包括修改后的版本、打包产物、二进制与衍生作品）必须：
+
+1. 完整保留本 NOTICE 文件与上述版权声明；
+2. 保留源代码文件头部的 SPDX-License-Identifier 与版权行；
+3. 以 GNU General Public License version 3（或更高版本）发布衍生作品，
+   并向接收者提供对应源代码（GPL-3.0 第 4、5、6 条）。
+
+第三方组件与素材的许可见各自目录下的说明。

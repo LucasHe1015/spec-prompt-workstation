@@ -1,0 +1,196 @@
+/* ==========================================================================
+   S.P.E.C. 7 // MOTION CORE
+   Shared timing tokens, keyframes and utility classes for the console.
+   Loaded after styles.css, before the per-area motion sheets.
+   ========================================================================== */
+
+:root {
+  /* durations */
+  --m-dur-1: 110ms;   /* hover / press micro-feedback */
+  --m-dur-2: 170ms;   /* leaving / dismiss */
+  --m-dur-3: 260ms;   /* standard entering */
+  --m-dur-4: 420ms;   /* hero blocks, panel cascade */
+  --m-delay-step: 26ms; /* stagger step */
+
+  /* easings — mechanical, quick start, long settle */
+  --m-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --m-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --m-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --m-ease-snap: cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+/* ------------------------------- keyframes -------------------------------- */
+
+@keyframes mFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mFadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+@keyframes mRiseIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mRiseOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes mDropIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mDropOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes mSlideInRight {
+  from { opacity: 0; transform: translateX(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mSlideInLeft {
+  from { opacity: 0; transform: translateX(-14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mSlideOutRight {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateX(10px); }
+}
+@keyframes mSlideOutLeft {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateX(-10px); }
+}
+
+@keyframes mPopIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mPopOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: scale(0.96); }
+}
+
+@keyframes mFlipIn {
+  from { opacity: 0; transform: translateY(7px) rotateX(-34deg); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mSweep {
+  from { transform: translateX(-101%) skewX(-12deg); }
+  to { transform: translateX(101%) skewX(-12deg); }
+}
+
+@keyframes mChipIn {
+  from { opacity: 0; transform: scale(0.9); }
+  62% { opacity: 1; transform: scale(1.015); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mShakeX {
+  0%, 100% { transform: none; }
+  18% { transform: translateX(-3px); }
+  38% { transform: translateX(3px); }
+  58% { transform: translateX(-2px); }
+  78% { transform: translateX(1px); }
+}
+
+@keyframes mRingIn {
+  from { opacity: 0.5; transform: scale(0.2); }
+  to { opacity: 0; transform: scale(1.7); }
+}
+
+@keyframes mBarGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes mMeterBlink {
+  0%, 100% { opacity: 1; }
+  34% { opacity: 0.32; }
+}
+
+/* --------------------------- utility: entering ---------------------------- */
+
+.m-enter,
+.m-leave {
+  animation-duration: var(--m-dur-3);
+  animation-timing-function: var(--m-ease-out);
+  animation-fill-mode: both;
+  transform-origin: center center;
+}
+
+.m-leave {
+  animation-duration: var(--m-dur-2);
+  animation-timing-function: var(--m-ease-in);
+}
+
+.m-enter-fast { animation-duration: var(--m-dur-2); }
+.m-enter-slow { animation-duration: var(--m-dur-4); }
+
+.m-enter-fade { animation-name: mFadeIn; }
+.m-enter-rise { animation-name: mRiseIn; }
+.m-enter-drop { animation-name: mDropIn; }
+.m-enter-pop { animation-name: mPopIn; }
+.m-enter-right { animation-name: mSlideInRight; }
+.m-enter-left { animation-name: mSlideInLeft; }
+.m-enter-flip { animation-name: mFlipIn; }
+.m-enter-chip { animation-name: mChipIn; }
+
+.m-leave-fade { animation-name: mFadeOut; }
+.m-leave-rise { animation-name: mRiseOut; }
+.m-leave-drop { animation-name: mDropOut; }
+.m-leave-pop { animation-name: mPopOut; }
+.m-leave-right { animation-name: mSlideOutRight; }
+.m-leave-left { animation-name: mSlideOutLeft; }
+
+/* --------------------------- utility: staggering -------------------------- */
+
+.m-stagger > * {
+  animation-name: mRiseIn;
+  animation-duration: var(--m-dur-3);
+  animation-timing-function: var(--m-ease-out);
+  animation-fill-mode: both;
+  animation-delay: calc(var(--m-i, 0) * var(--m-delay-step));
+}
+
+/* ----------------------------- utility: misc ------------------------------ */
+
+.m-pressable {
+  transition: transform var(--m-dur-1) var(--m-ease-snap),
+              box-shadow var(--m-dur-1) var(--m-ease-snap);
+}
+.m-pressable:active {
+  transform: translateY(1px);
+}
+
+.m-sweep-host {
+  position: relative;
+  overflow: hidden;
+}
+.m-sweep-host > .m-sweep-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--hl-420) 50%,
+    transparent 100%);
+  animation: mSweep var(--m-dur-4) var(--m-ease-out) 1 both;
+}
+
+.m-fold-host { overflow: hidden; }
+
+/* --------------------------- reduced motion ------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .m-enter,
+  .m-leave,
+  .m-stagger > *,
+  .m-sweep-host > .m-sweep-bar {
+    animation: none !important;
+  }
+  .m-pressable,
+  .m-pressable:active {
+    transition: none !important;
+    transform: none !important;
+  }
+}
