@@ -25,7 +25,7 @@ SOURCE_FILES = (
     "public/theme-dark.css",
     "public/theme-dark-states.css",
     "public/theme-dark-overlays.css",
-    "启动SPEC.bat",
+    "启动SPEC7.bat",
     "README.md",
     "MOTION_SPEC.md",
     # License texts are required when redistributing (GPL-3.0 §4/§5)

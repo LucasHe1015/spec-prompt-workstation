@@ -1,19 +1,64 @@
 @rem SPDX-License-Identifier: GPL-3.0-or-later
 @rem Copyright (C) 2026 LucasHe1015
 @echo off
-rem S.P.E.C. 7 // STATION FOR PROMPT EDITING AND COMPOSITION - exe launcher
-rem Use this when double-clicking SPEC7.exe does nothing: it pins the working
-rem directory to the exe folder so the onefile build unpacks into .runtime\
-rem beside the exe instead of into an unwritable current directory.
+rem S.P.E.C. 7 // STATION FOR PROMPT EDITING AND COMPOSITION - local launcher
+rem Double-clicking this file always starts the station: it runs the bundled
+rem SPEC7.exe when it sits next to this script, otherwise it falls back to
+rem server.py through a local Python 3 interpreter. Both serve 127.0.0.1:8765.
 setlocal
 cd /d "%~dp0"
 title S.P.E.C. 7 Station for Prompt Editing and Composition
 
-if not exist "%~dp0SPEC7.exe" (
-  echo [SPEC7] SPEC7.exe not found next to this script.
-  echo        Keep SPEC7.exe, .runtime\ and this file in the same folder.
+if not exist "%~dp0SPEC7.exe" goto :source
+
+echo.
+echo  S.P.E.C. 7 // STATION FOR PROMPT EDITING AND COMPOSITION
+echo  starting bundled station ...
+echo.
+"%~dp0SPEC7.exe" --port 8765
+set "EXITCODE=%ERRORLEVEL%"
+if not "%EXITCODE%"=="0" (
+  echo.
+  echo  The station stopped with code %EXITCODE%.
+  pause
+)
+goto :end
+
+:source
+set "PY="
+where py >nul 2>nul && set "PY=py -3"
+if not defined PY (
+  where python >nul 2>nul && set "PY=python"
+)
+if not defined PY (
+  if exist "%LOCALAPPDATA%\Programs\Python\Python313\python.exe" set "PY=%LOCALAPPDATA%\Programs\Python\Python313\python.exe"
+)
+if not defined PY (
+  if exist "%LOCALAPPDATA%\Programs\Python\Python310\python.exe" set "PY=%LOCALAPPDATA%\Programs\Python\Python310\python.exe"
+)
+if not defined PY (
+  echo.
+  echo  SPEC7.exe is not next to this script and Python 3 was not found.
+  echo  Put SPEC7.exe in this folder, or install Python 3.9+ from
+  echo  https://www.python.org/downloads/ and run this file again.
+  echo  S.P.E.C. 7 itself needs no extra packages.
+  echo.
   pause
   exit /b 1
 )
 
-"%~dp0SPEC7.exe" %*
+echo.
+echo  S.P.E.C. 7 // STATION FOR PROMPT EDITING AND COMPOSITION
+echo  starting local station from source ...
+echo.
+
+%PY% server.py --port 8765
+set "EXITCODE=%ERRORLEVEL%"
+if not "%EXITCODE%"=="0" (
+  echo.
+  echo  The station stopped with code %EXITCODE%.
+  pause
+)
+
+:end
+endlocal

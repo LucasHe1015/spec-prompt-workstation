@@ -11,11 +11,11 @@ S.P.E.C. = Station for Prompt Editing & Composition。
 
 **免安装（推荐）**：双击项目根目录的 `SPEC7.exe`（或从 [Releases](https://github.com/LucasHe1015/spec-prompt-workstation/releases) 下载）。服务在 127.0.0.1:8765 起站、自动打开浏览器；关掉控制台窗口即停站。exe 已内嵌前端资源与图标（`design/icons/spec-7.ico`），不需要系统 Python；首次运行会在 exe 同目录生成 `data/` 与 `user_data/`。旁边若有 `public/` 目录则优先读取它，方便热改前端。
 
-exe 是单文件打包（onefile），启动时要把自身解包到临时目录。解包位置固定在 exe 旁边的 `.runtime/`（`build_exe.py` 的 `RUNTIME_TMPDIR`），不使用系统 `%TEMP%`——某些 Windows 启动上下文拒绝在 `%TEMP%` 建目录，会直接报 `Could not create temporary directory!` 并闪退。因此 **exe 与 `.runtime/` 要待在同一个文件夹里**；若从「开始菜单搜索 / 任务栏固定」之类工作目录不是项目根的方式启动，改用同目录的 [启动SPEC7.bat](<启动SPEC7.bat>)，它会把工作目录切到 exe 所在文件夹再启动。
+exe 是单文件打包（onefile），启动时要把自身解包到临时目录。解包位置固定在 exe 旁边的 `.runtime/`（`build_exe.py` 的 `RUNTIME_TMPDIR`），不使用系统 `%TEMP%`——某些 Windows 启动上下文拒绝在 `%TEMP%` 建目录，会直接报 `Could not create temporary directory!` 并闪退。`.runtime/` 随 exe 自动生成，删掉无害，下次启动重建。万一双击没反应，在项目根开一个 cmd 运行 `SPEC7.exe --port 8765 --no-browser`，控制台会留下完整报错。
 
 `SPEC7.exe`、`.runtime/` 与发布包是构建产物，不放进 git 仓库，只随 Releases 分发；自行打包见下。
 
-**源码模式**（改服务端时用）：安装 Python 3.10+，双击 [启动SPEC.bat](<启动SPEC.bat>)，或运行：
+**源码模式**（改服务端时用）：安装 Python 3.10+，双击 [启动SPEC7.bat](<启动SPEC7.bat>)（仓库里唯一的启动脚本：同目录有 `SPEC7.exe` 就跑 exe，没有才退回 Python 源码模式），或运行：
 
 ```sh
 python server.py --port 8765 --no-browser
