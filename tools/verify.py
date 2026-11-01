@@ -3,7 +3,10 @@
 # Copyright (C) 2026 LucasHe1015
 import csv, json, glob
 rows=list(csv.DictReader(open('data/selected_tags.csv',encoding='utf-8')))
-base={k.replace(' ','_'):v for k,v in json.load(open('data/glossary.base.json',encoding='utf-8'))['entries'].items()}
+try:
+    base={k.replace(' ','_'):v for k,v in json.load(open('data/glossary.base.json',encoding='utf-8'))['entries'].items()}
+except FileNotFoundError:
+    base={}
 parts={}
 for p in sorted(glob.glob('data/parts/*.json')):
     parts.update({k:v for k,v in json.load(open(p,encoding='utf-8')).items() if v})

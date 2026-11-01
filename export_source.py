@@ -28,6 +28,9 @@ SOURCE_FILES = (
     "启动SPEC.bat",
     "README.md",
     "MOTION_SPEC.md",
+    # License texts are required when redistributing (GPL-3.0 §4/§5)
+    "LICENSE",
+    "NOTICE",
     ".gitignore",
     "export_source.py",
     "test_privacy.py",

@@ -9,7 +9,11 @@ S.P.E.C. = Station for Prompt Editing & Composition。
 
 ## 启动
 
-**免安装（推荐）**：从 [Releases](https://github.com/LucasHe1015/spec-prompt-workstation/releases) 下载 `SPEC7.exe`（发布包）后双击。服务在 127.0.0.1:8765 起站、自动打开浏览器；关掉控制台窗口即停站。exe 已内嵌前端资源与图标（`design/icons/spec-7.ico`），不需要系统 Python；首次运行会在 exe 同目录生成 `data/` 与 `user_data/`。旁边若有 `public/` 目录则优先读取它，方便热改前端。`SPEC7.exe` 与发布包是构建产物，不放进 git 仓库，只随 Releases 分发；自行打包见下。
+**免安装（推荐）**：双击项目根目录的 `SPEC7.exe`（或从 [Releases](https://github.com/LucasHe1015/spec-prompt-workstation/releases) 下载）。服务在 127.0.0.1:8765 起站、自动打开浏览器；关掉控制台窗口即停站。exe 已内嵌前端资源与图标（`design/icons/spec-7.ico`），不需要系统 Python；首次运行会在 exe 同目录生成 `data/` 与 `user_data/`。旁边若有 `public/` 目录则优先读取它，方便热改前端。
+
+exe 是单文件打包（onefile），启动时要把自身解包到临时目录。解包位置固定在 exe 旁边的 `.runtime/`（`build_exe.py` 的 `RUNTIME_TMPDIR`），不使用系统 `%TEMP%`——某些 Windows 启动上下文拒绝在 `%TEMP%` 建目录，会直接报 `Could not create temporary directory!` 并闪退。因此 **exe 与 `.runtime/` 要待在同一个文件夹里**；若从「开始菜单搜索 / 任务栏固定」之类工作目录不是项目根的方式启动，改用同目录的 [启动SPEC7.bat](<启动SPEC7.bat>)，它会把工作目录切到 exe 所在文件夹再启动。
+
+`SPEC7.exe`、`.runtime/` 与发布包是构建产物，不放进 git 仓库，只随 Releases 分发；自行打包见下。
 
 **源码模式**（改服务端时用）：安装 Python 3.10+，双击 [启动SPEC.bat](<启动SPEC.bat>)，或运行：
 
@@ -71,7 +75,7 @@ python export_source.py
 
 [导出工具](<export_source.py>) 在 `dist/` 创建白名单源码 ZIP，不包含本机配置、用户数据、截图、模型权重或版本历史。为了避免带出自定义词条，导出包使用空词条库；接收者可以自行添加词条或连接翻译引擎。本地词条库和数据不变。
 
-[忽略规则](<.gitignore>) 同样排除可编辑的本地词条库，只防止未跟踪文件被 Git 意外添加，**不能移除已跟踪文件、旧提交或已发布附件中的隐私信息**。若过去公开过密钥，应撤销并更换；公开前还应检查待分享源码是否新增了私人内容。
+[忽略规则](<.gitignore>) 排除本机配置、用户数据、截图、模型权重与打包产物，只防止未跟踪文件被 Git 意外添加，**不能移除已跟踪文件、旧提交或已发布附件中的隐私信息**。若过去公开过密钥，应撤销并更换；公开前还应检查待分享源码是否新增了私人内容。
 
 ## 主要文件
 
@@ -79,7 +83,7 @@ python export_source.py
 - [public/index.html](<public/index.html>)、[public/app.js](<public/app.js>)、[public/styles.css](<public/styles.css>)：页面、交互与样式。
 - 动效层：[public/motion.js](<public/motion.js>) 提供 `SPECMotion` 动画助手（显示/隐藏、折叠、级联、按压反馈，`prefers-reduced-motion` 下自动瞬切）；[public/motion-core.css](<public/motion-core.css>) 定义时长/缓动令牌与公共关键帧，[motion-nav.css](<public/motion-nav.css>)、[motion-panels.css](<public/motion-panels.css>)、[motion-overlays.css](<public/motion-overlays.css>) 分别承载侧栏与视图、面板与列表、浮层与弹窗的动效。改动约定见 [MOTION_SPEC.md](<MOTION_SPEC.md>)。
 - 配色层：[public/styles.css](<public/styles.css>) 里的每个颜色字面量都已收敛成语义 token（`--paper`、`--ink`、`--face-*`、`--sh-*`、`--hl-*`、`--veil-*` 等）；[theme-dark.css](<public/theme-dark.css>) 只重映射这些 token 的深色取值，[theme.css](<public/theme.css>) 承载切换按钮、圆形展开的 View Transition 与少量深色修正，[theme-dark-states.css](<public/theme-dark-states.css>)、[theme-dark-overlays.css](<public/theme-dark-overlays.css>) 补齐深色下的交互状态与浮层细节，[theme.js](<public/theme.js>) 负责切换与持久化。新增颜色请写成 token 引用，否则深色主题无法跟随。
-- `data/glossary.json`：可编辑的本地词条库。仓库不含该文件（避免带出个人词条），由 [tools/build_glossary.py](<tools/build_glossary.py>) 从已入库的 `data/selected_tags.csv`、`data/glossary.base.json`、`data/parts/*.json` 合成，需要 `pip install pypinyin`。
+- `data/glossary.json`：可编辑的本地词条库（9144 条，已随仓库入库，基于公开的 Danbooru tag 词表）。改词条可直接编辑它，或改 `data/parts/*.json` 分片后用 [tools/build_glossary.py](<tools/build_glossary.py>) 从 `data/selected_tags.csv` 与分片重新合成（重建需 `pip install pypinyin`）；`data/parts/zz_base.json` 收纳 CSV 之外的通用词条，是手工补充词表的落点。
 
 ## 许可证与署名
 

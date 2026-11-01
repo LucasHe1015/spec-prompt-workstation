@@ -1,4 +1,0 @@
-skin_fangs	不确定：疑似「皮肤质感尖牙/牙形皮肤」梗tag，直译易误解，暂留 null
-kibito_high_school_uniform	不确定：kibito 校名未查证到通行中文名，担心误译，暂留 null
-sakugawa_school_uniform	不确定：sakugawa 校名未查证到通行中文名，担心误译，暂留 null
-okamisty	不确定：疑似作者/梗向生造词，无对应中文译法，暂留 null

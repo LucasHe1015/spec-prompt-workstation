@@ -4,8 +4,9 @@
 """Merge translation parts into the tag glossary.
 
 Layers (低 -> 高优先级):
-  1. data/glossary.base.json   原始人工词表基线
+  1. data/glossary.base.json   旧基线（可选，缺失时跳过）
   2. data/parts/*.json          分片翻译产物（key 为 CSV 原名，保留下划线）
+                                zz_base.json 是人工词表的落点，CSV 之外的词条也靠它保留
 输出:
   data/glossary.json           en(空格形式) -> zh，按中文值升序(拼音)
   data/glossary_zh.csv         审阅用表格
@@ -18,7 +19,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
 
 rows = list(csv.DictReader(open('data/selected_tags.csv', encoding='utf-8')))
-base = json.load(open('data/glossary.base.json', encoding='utf-8'))['entries']
+try:
+    base = json.load(open('data/glossary.base.json', encoding='utf-8'))['entries']
+except FileNotFoundError:
+    base = {}
 parts = {}
 part_src = collections.defaultdict(dict)
 for p in sorted(glob.glob('data/parts/*.json')):
@@ -45,8 +49,11 @@ for r in rows:
     merged[k] = v
 
 missing = [r['name'] for r in rows if merged.get(r['name']) in (None, '')]
-# 基线里存在但 CSV 没有的旧词条照旧保留
+# CSV 之外的词条：旧基线留下的与分片里手工补充的（如 zz_base.json）都保留，分片优先
 extra_base = {k: v for k, v in base_u.items() if k not in merged}
+for k, v in parts.items():
+    if k not in merged and v:
+        extra_base[k] = v
 
 entries = {norm(k): v for k, v in merged.items() if v}
 entries.update({norm(k): v for k, v in extra_base.items()})

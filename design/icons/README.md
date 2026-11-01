@@ -14,7 +14,6 @@
 | `spec-7-patch.svg` | 徽章源文件（唯一事实来源，120×120 viewBox） |
 | `spec-7-favicon.svg` | 浏览器标签图标源文件（32×32，几何按比例简化） |
 | `spec-7.ico` | 多尺寸 Windows 图标（16/24/32/48/64/128/256，透明底） |
-| `spec-7-256.ico` | 只含 256 单帧的 `.ico`（给只认一张图的场合用） |
 | `spec-7-256.png` | 从 `.ico` 里单独取出的 256×256 帧（透明底 PNG，可直接当应用图标/头像） |
 | `spec-7-patch-in-app.png` | 真实页面截图并排（左浅色 / 右深色）：徽章与顶栏 wordmark 的关系 |
 | `tools/gen-patch.mjs` | 生成 `spec-7-patch.svg` + `spec-7-favicon.svg`（参数化，可 A/B） |
@@ -66,7 +65,7 @@ node design/icons/tools/sync-symbol.mjs    # 同步到 public/index.html 的 <sy
 node design/icons/tools/make-favicon.mjs   # 同步 favicon 的 data URI
 node design/icons/tools/make-ico.mjs       # 重新打包 spec-7.ico（7 帧）
 
-# 只要单帧 256 的 .ico
+# 只要单帧 256 的 .ico（按需生成，不纳入仓库）
 SIZES=256 node design/icons/tools/make-ico.mjs design/icons/spec-7-256.ico
 ```
 

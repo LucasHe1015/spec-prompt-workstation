@@ -32,7 +32,8 @@
 | 静态文件目录穿越 | ✅ | 只允许 `public/` 内文件，拒绝目录外路径 |
 | 导出白名单 | ✅ | 只导出源码；不包含 `config.json`、`user_data`、`screenshots`、`models`、`dist`、本机词条库 |
 | 导出词条库 | ✅ | 归档内写入空 `data/glossary.json`，避免带出自定义词条 |
-| Git 忽略规则 | ✅ | 忽略配置、用户数据、截图、模型权重、导出包和本机词条库 |
+| Git 忽略规则 | ✅ | 忽略配置、用户数据、截图、模型权重、导出包与打包产物；`data/glossary.json` 基于公开 Danbooru tag 词表，已入库 |
+| 仓库内词条库 | ✅ | 入库的 `data/glossary.json` 只含公开 tag 表的中文译名，不含私人提示词或用户数据 |
 | API Key 不回显到页面 | ✅ | 设置界面密钥输入框始终为空，仅显示“已保存密钥” |
 | 服务版本信息 | ✅ | 不返回 Python 版本 |
 | 本地存储提示 | ⚠️ | `localStorage` 的 `spec7:draft` 会保留原文草稿；README 已提示 |

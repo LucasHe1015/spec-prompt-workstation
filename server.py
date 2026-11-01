@@ -90,6 +90,24 @@ _PACKED_DIR = Path(sys._MEIPASS) if getattr(sys, "_MEIPASS", None) else None  # 
 
 ROOT = FROZEN_DIR or Path(__file__).resolve().parent
 
+if FROZEN_DIR is not None:
+    # An onedir build may sit in its own subfolder (SPEC7\SPEC7.exe). A one-line
+    # spec7-home.txt next to the exe (".." or an absolute path) points the station
+    # back at the project root so config.json / data / user_data keep living in the
+    # source tree instead of beside the launcher.
+    _hint_file = FROZEN_DIR / "spec7-home.txt"
+    if _hint_file.is_file():
+        try:
+            _hint_text = _hint_file.read_text(encoding="utf-8").strip()
+        except OSError:
+            _hint_text = ""
+        if _hint_text:
+            _hint_path = Path(_hint_text)
+            if not _hint_path.is_absolute():
+                _hint_path = FROZEN_DIR / _hint_path
+            if _hint_path.exists():
+                ROOT = _hint_path.resolve()
+
 
 def _resolve_asset(name: str) -> Path:
     """Prefer <exe dir>/<name> so users can hot-edit front-end files; else use the bundled copy.
