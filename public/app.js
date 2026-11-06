@@ -933,8 +933,8 @@
     const version = encodeURIComponent(record.updatedAt || example || '');
     const frame = example
       ? `<img src="/api/favorite/example/${encodeURIComponent(id)}?v=${version}" alt="示例图">` +
-        '<span class="record-example-hint">点击更换 · 悬停后 CTRL+V 粘贴</span>'
-      : '<span class="record-example-empty"><b>NO EXAMPLE / 暂无示例图</b><span>点击选择图片</span><span>悬停后 CTRL+V 粘贴</span></span>';
+        '<span class="record-example-hint">点击更换 · CTRL+V 粘贴</span>'
+      : '<span class="record-example-empty"><b>NO EXAMPLE / 暂无示例图</b><span>点击选择图片</span></span>';
     return `<section class="record-example">` +
       `<header class="record-example-head"><span>示例图 / EXAMPLE</span><span>${example ? '已上传' : '未上传'}</span></header>` +
       `<button type="button" class="record-example-frame${example ? ' has-image' : ''}" data-record-example-upload="${esc(id)}" data-record-example-id="${esc(id)}" title="点击选择图片，或悬停后 Ctrl+V 粘贴">${frame}</button>` +
@@ -992,8 +992,8 @@
     }
     if (!records.length) {
       list.innerHTML = `<div class="record-empty">${kind === 'history'
-        ? 'NO HISTORY / 暂无历史记录 · 翻译完成后会自动记录'
-        : 'NO FAVORITES / 暂无收藏 · 在会话界面点击 ☆ 收藏'}</div>`;
+        ? 'NO HISTORY / 暂无历史记录'
+        : 'NO FAVORITES / 暂无收藏'}</div>`;
       return;
     }
     list.innerHTML = records.map((record) => recordCardHtml(record, kind)).join('');

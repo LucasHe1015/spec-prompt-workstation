@@ -55,7 +55,6 @@ html[data-theme="dark"] {
   --face-bright-hover: #302D24;
   --on-accent: #FFFCF4;
   --ink-hand: #C08A6E;
-  --face-sticker: #332E22;
   --face-bright: #2B2820;
   --ink-on-primary: #F3EDDD;
   --face-sunk: #201E18;
@@ -166,16 +165,12 @@ html[data-theme="dark"] body::after {
 }
 
 /* ------------------------- textured decorations ------------------------- */
-html[data-theme="dark"] .workspace::after { opacity: 0.28; }
 html[data-theme="dark"] .watermark { opacity: 0.042; }
 
-/* mission patch and stickers stay light paper objects: give them a hard
-   dark edge so they read as physical stickers on a dark panel. */
+/* mission patch stays a light paper object: give it a hard
+   dark edge so it reads as a physical badge on a dark panel. */
 html[data-theme="dark"] .patch {
   filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.85)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
-}
-html[data-theme="dark"] .sticker {
-  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
 }
 
 /* photos: cool them down a notch so they do not glow against the dark paper */

@@ -953,6 +953,87 @@ def ollama_messages(instruction: str, payload: str) -> list[dict]:
     return [{"role": "user", "content": instruction + "\n\n" + payload}]
 
 
+# --------------------------------------------------------------------------- #
+# dedicated translation models (TranslateGemma / Hunyuan-MT / SEED-X / Tower)
+# --------------------------------------------------------------------------- #
+LANG_PAIR = {
+    "en": ("English", "en"),
+    "zh": ("Chinese", "zh"),
+}
+
+
+def translation_language_pair(direction: str):
+    if direction == "zh2en":
+        return LANG_PAIR["zh"], LANG_PAIR["en"]
+    return LANG_PAIR["en"], LANG_PAIR["zh"]
+
+
+def translation_only_prompt(text: str, direction: str = "en2zh") -> str:
+    """Rebuild the TranslateGemma chat template ourselves.
+
+    These models are pure text-in / text-out translators and carry their own
+    instruction inside the chat template. Feeding them "our instruction + the
+    payload" in a single user turn makes them translate the instruction too —
+    that is what leaked the prompt into the output. Ollama's chat endpoint
+    rejects the structured content array this template expects (HTTP 400), so
+    the only reliable path is /api/generate with raw=true and a prompt we own.
+    """
+    (src_name, src_code), (tgt_name, tgt_code) = translation_language_pair(direction)
+    return (
+        "<start_of_turn>user\n"
+        f"You are a professional {src_name} ({src_code}) to {tgt_name} ({tgt_code}) translator. "
+        f"Your goal is to accurately convey the meaning and nuances of the original {src_name} text "
+        f"while adhering to {tgt_name} grammar, vocabulary, and cultural sensitivities.\n"
+        f"Produce only the {tgt_name} translation, without any additional explanations or commentary. "
+        f"Please translate the following {src_name} text into {tgt_name}:\n\n\n" + text +
+        "<end_of_turn>\n<start_of_turn>model\n"
+    )
+
+
+def ollama_generate(cfg: dict, model: str, prompt: str, timeout: float, raw: bool = True) -> str:
+    base = normalize_base(cfg["ollama"]["baseUrl"])
+    payload = {
+        "model": model,
+        "prompt": prompt,
+        "stream": False,
+        "raw": raw,
+        "options": {"temperature": 0},
+    }
+    data = http_json(base + "/api/generate", method="POST", payload=payload, timeout=timeout)
+    return data.get("response", "") or ""
+
+
+ECHO_MARKERS = (
+    "danbooru",
+    "翻译成",
+    "拉丁字母",
+    "不包含引号",
+    "仅输出",
+    "output only",
+    "without quotes",
+    "translate this",
+    "translate the following",
+)
+
+
+def looks_like_prompt_echo(source: str, output: str, direction: str = "en2zh") -> bool:
+    """The model answered by translating our own instruction (prompt leak)."""
+    src = (source or "").strip()
+    out = (output or "").strip()
+    if not out:
+        return False
+    low_src, low_out = src.lower(), out.lower()
+    for marker in ECHO_MARKERS:
+        if marker in low_out and marker not in low_src:
+            return True
+    # A short tag can never legitimately expand into a paragraph. Chinese packs
+    # more meaning per character, so zh -> en output is allowed to be longer.
+    limit = max(48, 8 * len(src)) if direction == "zh2en" else max(24, 4 * len(src))
+    if len(src) <= 24 and len(out) > limit:
+        return True
+    return False
+
+
 def llm_translate_batch(engine: str, cfg: dict, model: str, texts: list[str],
                         direction: str = "en2zh") -> list[str]:
     instruction = SYSTEM_PROMPT if direction == "en2zh" else SYSTEM_PROMPT_ZH2EN
@@ -1021,16 +1102,26 @@ def per_block_translate(engine: str, cfg: dict, model: str, texts: list[str],
             return TAG_PROMPT_ZH2EN
         return SINGLE_PROMPT if direction == "en2zh" else SINGLE_PROMPT_ZH2EN
 
+    only_model = engine == "ollama" and is_translation_only_model(model)
+
     def call_model(instruction: str, text: str) -> str:
-        if engine == "ollama":
+        if only_model:
+            # Translation-dedicated models bring their own instruction inside the
+            # chat template; never hand them ours, or they translate it as well.
+            raw = ollama_generate(cfg, model, translation_only_prompt(text, direction), timeout=90.0)
+        elif engine == "ollama":
             messages = ollama_messages(instruction, text)
+            raw = llm_chat(engine, cfg, model, messages, timeout=90.0)
         else:
             messages = [
                 {"role": "system", "content": instruction},
                 {"role": "user", "content": text},
             ]
-        raw = llm_chat(engine, cfg, model, messages, timeout=90.0).strip()
-        return raw.strip().strip('"').strip("“”").strip()
+            raw = llm_chat(engine, cfg, model, messages, timeout=90.0)
+        raw = raw.strip().strip('"').strip("“”").strip()
+        if looks_like_prompt_echo(text, raw, direction):
+            return ""
+        return raw
 
     def one(text: str, instruction: str) -> str:
         raw = call_model(instruction, text)
@@ -1096,7 +1187,8 @@ def translate_texts(engine: str, cfg: dict, model: str, texts: list[str],
         warnings.append(exc.message)
     else:
         retry_indexes = [index for index, (source, output) in enumerate(zip(texts, translated))
-                         if looks_untranslated(source, output, direction)]
+                         if looks_untranslated(source, output, direction)
+                         or looks_like_prompt_echo(source, output, direction)]
         if retry_indexes:
             retry_types = [types[index] for index in retry_indexes] if types else None
             retry_values = per_block_translate(engine, cfg, model,

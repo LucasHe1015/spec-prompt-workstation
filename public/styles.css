@@ -138,7 +138,6 @@
   --face-bright-hover: #FFF8F2; /* button hover surface */
   --on-accent: #F8F2E4; /* light text on colour blocks */
   --ink-hand: #8A4A3A; /* handwritten ink */
-  --face-sticker: #F8F3E5; /* sticker surface */
   --panel-c: #F5F0E3; /* existing var */
   --face-bright: #FFFDF6; /* hover / input highlight surface */
   --ink-on-primary: #383327; /* primary button text */
@@ -962,19 +961,6 @@ button { font: inherit; color: inherit; }
   isolation: isolate;
 }
 
-.workspace::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.55;
-  background-image:
-    linear-gradient(104deg, transparent 0 38.62%, var(--hl-620) 38.7% 38.74%, transparent 38.82%),
-    linear-gradient(101deg, transparent 0 61.2%, var(--sh-70) 61.26% 61.3%, transparent 61.38%),
-    linear-gradient(97deg, transparent 0 82.4%, var(--hl-420) 82.46% 82.5%, transparent 82.58%);
-}
-
 .workspace > * { position: relative; z-index: 1; }
 
 .watermark {
@@ -1065,34 +1051,6 @@ button { font: inherit; color: inherit; }
   line-height: 1.7;
   color: var(--ink-3);
   letter-spacing: 0.02em;
-}
-
-.sticker {
-  position: absolute;
-  top: -13px;
-  right: -16px;
-  transform: rotate(5deg);
-  background: var(--face-sticker);
-  border: 1px solid var(--ink);
-  padding: 4px 7px 6px;
-  font-family: var(--font-mono);
-  font-size: 7px;
-  letter-spacing: 0.14em;
-  line-height: 1.35;
-  text-align: center;
-  color: var(--ink-2);
-  box-shadow: 2px 2px 0 var(--sh-140);
-  z-index: 3;
-}
-.sticker span { display: block; }
-.sticker::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--c1) 0 25%, var(--c2) 25% 50%, var(--c3) 50% 75%, var(--c4) 75% 100%);
 }
 
 /* -------------------------- standby signal chain ------------------------- */
@@ -1948,6 +1906,8 @@ button { font: inherit; color: inherit; }
   color: var(--ink-3);
   white-space: nowrap;
 }
+/* the ENTER hint was removed — keep the translate button pinned right */
+.composer-foot .btn-translate { margin-left: auto; }
 .hdot { color: var(--line-3); padding: 0 3px; }
 
 /* ------------------------- character fold (translate) -------------------- */
@@ -3032,7 +2992,6 @@ body { font-size: 15px; }
 .notes-list b { font-size: 13px; }
 .notes-list li span:not(.n) { font-size: 8.5px; margin-top: 4px; }
 .notes-foot { font-size: 11px; margin-top: 16px; padding-top: 11px; }
-.sticker { font-size: 8px; padding: 5px 9px 7px; top: -15px; right: -18px; }
 
 /* --- standby signal chain ------------------------------------------------ */
 .standby { width: 620px; padding: 18px 22px 16px; }
@@ -3585,6 +3544,7 @@ body.is-session-dragging {
   color: var(--ink-3);
 }
 .glossary-foot #glossaryVisibleMeta {
+  margin-left: auto;
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.12em;
@@ -4424,12 +4384,6 @@ body.is-gallery-dragging {
   font-size: 10px;
   letter-spacing: 0.12em;
 }
-.gallery-preview-hint {
-  font-family: var(--font-mono);
-  font-size: 8px;
-  color: var(--ink-3);
-  text-align: center;
-}
 .gallery-preview-dims {
   align-self: flex-end;
   min-height: 12px;
@@ -5095,12 +5049,6 @@ body.is-gallery-dragging {
   transition: opacity 0.12s ease;
 }
 .wardrobe-preview:hover .wardrobe-preview-hint { opacity: 1; }
-.wardrobe-preview-size {
-  font-family: var(--font-mono);
-  font-size: 7px;
-  letter-spacing: 0.06em;
-  color: var(--ink-3);
-}
 .wardrobe-editor-fields {
   min-width: 0;
   display: flex;
@@ -5162,6 +5110,8 @@ body.is-gallery-dragging {
   font-size: 8.5px;
   color: var(--ink-3);
 }
+/* hint removed — cancel/save stay right-aligned */
+.wardrobe-editor-foot #wardrobeCancelBtn { margin-left: auto; }
 .character-shell {
   flex: 1;
   min-height: 0;
@@ -5286,13 +5236,6 @@ body.is-gallery-dragging {
 .character-portrait.has-image:focus-visible .character-portrait-paste-hint {
   opacity: 1;
 }
-.character-portrait-hint {
-  font-family: var(--font-mono);
-  font-size: 7.5px;
-  letter-spacing: 0.06em;
-  color: var(--ink-3);
-  text-align: center;
-}
 .character-form {
   min-height: 0;
   overflow: auto;
@@ -5364,6 +5307,8 @@ body.is-gallery-dragging {
   color: var(--ink-3);
 }
 .character-split-head .btn { height: 28px; padding: 0 10px; font-size: 9px; }
+/* hint removed — 新建组 stays right-aligned */
+.character-split-head #characterGroupAddBtn { margin-left: auto; }
 .character-combo {
   position: relative;
   display: flex;
@@ -5905,6 +5850,8 @@ body.is-character-tag-dragging * { cursor: grabbing !important; }
   color: var(--ink-3);
 }
 .character-create-foot .btn { height: 44px; }
+/* hint removed — create button stays right-aligned */
+.character-create-foot #characterCreateBtn { margin-left: auto; }
 .character-create-foot .btn-clear,
 .character-create-foot .btn-paste { height: 44px; font-size: 11px; }
 .character-create-foot #characterCreateBtn {
@@ -5928,7 +5875,6 @@ body.is-character-tag-dragging * { cursor: grabbing !important; }
 .view-card .character-side { gap: 12px; }
 .view-card .character-portrait { max-width: 330px; }
 .view-card .character-portrait-btn { height: 38px; font-size: 11px; }
-.view-card .character-portrait-hint { font-size: 8.5px; }
 .view-card .character-form { gap: 16px; }
 .view-card .character-row2 { gap: 16px; }
 .view-card .character-field { gap: 7px; }

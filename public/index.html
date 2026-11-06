@@ -316,8 +316,8 @@
               </header>
               <div class="record-list" id="historyList"></div>
               <footer class="record-foot">
-                <span>最多保留 25 条，最新记录在前；点击记录会在新的会话标签中打开。</span>
-                <span>STAR 转入收藏 · DEL 删除</span>
+                <span>25 条 · 新→旧 · 点击新开</span>
+                <span>STAR 收藏 · DEL 删</span>
               </footer>
             </div>
           </div>
@@ -331,10 +331,6 @@
                 <span class="panel-meta" id="favoriteMeta">0 RECORDS</span>
               </header>
               <div class="record-list" id="favoriteList"></div>
-              <footer class="record-foot">
-                <span>星标收藏永久保存，不会自动清理。</span>
-                <span>FAVORITE // 收藏夹</span>
-              </footer>
             </div>
           </div>
         </section>
@@ -438,7 +434,7 @@
                 </section>
               </div>
               <footer class="panel-foot panel-foot-target">
-                <span class="link-legend">HOVER 联动 · 双击译文改中文并回写英文</span>
+                <span class="link-legend">双击改中文 · 悬停联动</span>
                 <span class="engine-used" id="engineUsed">—</span>
               </footer>
             </article>
@@ -463,7 +459,7 @@
             <span class="composer-title"><b>INPUT BAY</b> <span class="c-code">01</span> // 原文输入</span>
             <span class="composer-meter"><span id="charMeter">0000</span> / 4000</span>
           </header>
-          <textarea id="composerInput" spellcheck="false" maxlength="4000" placeholder="粘贴或输入英文提示词…&#10;第一段用逗号分隔 tags，空行之后写自然语言描述。"></textarea>
+          <textarea id="composerInput" spellcheck="false" maxlength="4000" placeholder="第一段用英文逗号分隔 tags，空行之后写自然语言描述。"></textarea>
           <footer class="composer-foot">
             <button class="btn btn-clear" id="clearBtn" title="清空当前输入内容">
               <svg class="icon"><use href="#ico-close"/></svg>
@@ -505,7 +501,6 @@
                 <div class="preset-list" id="presetList"></div>
               </div>
             </section>
-            <span class="composer-hint">ENTER = 换行 <span class="hdot">·</span> CTRL + ENTER = 翻译</span>
             <button class="btn-translate" id="translateBtn" aria-label="开始翻译">
               <svg class="icon"><use href="#ico-enter"/></svg>
               <span class="bt-label">TRANSLATE</span>
@@ -573,12 +568,10 @@
                         <span class="wardrobe-preview-empty" id="wardrobePreviewEmpty">
                           <span>NO PREVIEW</span>
                           <span>点击上传示意图</span>
-                          <span>悬停后 CTRL+V 粘贴</span>
                         </span>
-                        <span class="wardrobe-preview-hint">点击更换 · 悬停后 CTRL+V 粘贴</span>
+                        <span class="wardrobe-preview-hint">点击更换 · CTRL+V 粘贴</span>
                       </button>
                       <input type="file" id="wardrobePreviewInput" accept="image/png,image/jpeg,image/webp" hidden>
-                      <span class="wardrobe-preview-size">PNG / JPEG / WebP · ≤8 MB</span>
                     </div>
                     <div class="wardrobe-editor-fields">
                       <label class="wardrobe-field">
@@ -597,7 +590,6 @@
                   </div>
                   <footer class="wardrobe-editor-foot">
                     <button class="btn btn-ghost btn-sm" id="wardrobePasteBtn" type="button">粘贴剪贴板</button>
-                    <span class="wardrobe-editor-hint">点击左侧上传示意图，或将图片/文本粘贴到此界面</span>
                     <button class="btn btn-ghost btn-sm" id="wardrobeCancelBtn" type="button">取消</button>
                     <button class="btn btn-primary btn-sm" id="wardrobeSaveBtn" type="button">保存 SAVE</button>
                   </footer>
@@ -611,12 +603,10 @@
                   <span class="character-portrait-empty" id="characterPortraitEmpty">
                     <span>NO PORTRAIT</span>
                     <span>点击选择图片</span>
-                    <span>悬停后 CTRL+V 粘贴</span>
                   </span>
-                  <span class="character-portrait-paste-hint">点击更换 · 悬停后 CTRL+V 粘贴</span>
+                  <span class="character-portrait-paste-hint">点击更换 · CTRL+V 粘贴</span>
                 </button>
                 <input type="file" id="characterPortraitInput" accept="image/png,image/jpeg,image/webp" hidden>
-                <span class="character-portrait-hint">PNG / JPEG / WebP · ≤8 MB</span>
               </aside>
               <div class="character-form">
                 <div class="character-row2">
@@ -645,7 +635,6 @@
                 <div class="character-combo">
                   <div class="character-combo-head">
                     <span class="character-tagset-label">COMBO / 组合</span>
-                    <span class="character-split-hint">拖动组名块可以调整顺序</span>
                     <div class="character-combo-actions">
                       <button class="btn btn-ghost btn-sm" id="characterComboAddBtn" type="button">＋ ADD</button>
                       <button class="btn btn-ghost btn-sm" id="characterComboWardrobeBtn" type="button">衣柜</button>
@@ -671,7 +660,6 @@
                 <div class="character-split">
                   <div class="character-split-head">
                     <span class="character-tagset-label">TAG SPLIT / 词条拆分</span>
-                    <span class="character-split-hint">拖动上方词块到分组中</span>
                     <button class="btn btn-ghost btn-sm" id="characterGroupAddBtn" type="button">＋ 新建组</button>
                   </div>
                   <div class="character-tag-preview" id="characterTagPreview"></div>
@@ -701,7 +689,6 @@
                 <footer class="character-create-foot">
                   <button class="btn btn-clear" id="characterCreateClear">清空 CLEAR</button>
                   <button class="btn btn-paste" id="characterCreatePaste">粘贴剪贴板 PASTE</button>
-                  <span class="character-create-hint">创建后可继续补充名称、出处和肖像</span>
                   <button class="btn btn-primary" id="characterCreateBtn">创建角色卡 CREATE</button>
                 </footer>
               </section>
@@ -737,12 +724,10 @@
                     <img id="galleryPreviewImg" alt="作品预览" hidden>
                     <span class="gallery-preview-empty" id="galleryPreviewEmpty">
                       <b>UPLOAD PREVIEW</b>
-                      <span>点击选择图片</span>
-                      <span>悬停后 CTRL+V 粘贴</span>
+                      <span>点击选择图片 · CTRL+V 粘贴</span>
                     </span>
                   </button>
                   <input type="file" id="galleryPreviewInput" accept="image/png,image/jpeg,image/webp" hidden>
-                  <span class="gallery-preview-hint">PNG / JPEG / WebP · ≤8 MB</span>
                   <span class="gallery-preview-dims" id="galleryPreviewDimensions">—</span>
                 </div>
                 <div class="gallery-add-form">
@@ -826,7 +811,6 @@
             </div>
             <div class="glossary-list" id="glossaryList"></div>
             <footer class="glossary-foot">
-              <span>词条库优先开启时，翻译台会优先使用这里的译法；保存后立即生效。</span>
               <span id="glossaryVisibleMeta">VISIBLE 0 / 0</span>
             </footer>
           </div>
@@ -891,7 +875,7 @@
             <span class="eo-code">A-05</span><span class="eo-name">词条库 GLOSSARY</span><span class="eo-desc">仅离线词条，最为稳定</span>
           </label>
         </div>
-        <p class="form-note">AUTO 的探测顺序：Ollama → LM Studio / 兼容 API → LibreTranslate → Chrome 内置。默认地址为本机；若配置远端接口，待翻译内容会发送给该服务。编辑原文后也可能自动触发翻译，请勿向不可信接口提交私人内容。</p>
+        <p class="form-note">若配置远端接口，待翻译内容会发送给该服务；编辑原文后也可能自动触发翻译。请勿向不可信接口提交私人内容。</p>
       </section>
 
       <details class="cfg" data-cfg="ollama">
@@ -924,7 +908,7 @@
         <div class="cfg-body">
           <label class="field"><span>BASE URL</span><input id="libreUrl" spellcheck="false" placeholder="http://127.0.0.1:5000"></label>
           <label class="field"><span>API KEY</span><input id="libreKey" type="password" spellcheck="false" placeholder="可选"></label>
-          <div class="cfg-actions"><span class="cfg-hint">LibreTranslate 需自行启动，例如：libretranslate --load-only en,zh</span></div>
+          <div class="cfg-actions"><span class="cfg-hint">需自行启动：libretranslate --load-only en,zh</span></div>
         </div>
       </details>
 
@@ -933,7 +917,7 @@
           <input type="checkbox" id="useGlossary">
           <span>词条库优先 <em>TAG GLOSSARY FIRST</em></span>
         </label>
-        <p class="form-note">开启后，常见 tags 优先使用内置词条库翻译（<span id="glossaryFormCount">375</span> 条，Danbooru 风格），未知词条再交给所选引擎。句块始终使用引擎翻译。</p>
+        <p class="form-note">常见 tags 优先用内置词条库（<span id="glossaryFormCount">375</span> 条，Danbooru 风格），未知词条交引擎。句块始终用引擎。</p>
       </section>
 
       <section class="form-section">
@@ -988,7 +972,7 @@
     </div>
     <div class="glossary-add-list" id="glossaryAddList"></div>
     <div class="glossary-add-foot">
-      <span class="ga-note" id="glossaryAddNote">确认后写入词条库，可直接改写英文或中文。</span>
+      <span class="ga-note" id="glossaryAddNote"></span>
       <button class="btn btn-sm btn-ghost ga-foot-btn" id="glossaryAddCancel" type="button">取消</button>
       <button class="btn btn-sm btn-primary ga-foot-btn" id="glossaryAddOk" type="button">确认写入</button>
     </div>
@@ -1006,7 +990,6 @@
     <div class="image-viewer-stage" id="imageViewerStage">
       <img id="imageViewerImg" alt="">
     </div>
-    <div class="image-viewer-foot">DOUBLE CLICK TO OPEN · ESC TO CLOSE</div>
   </div>
 </div>
 
