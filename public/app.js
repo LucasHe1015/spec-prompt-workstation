@@ -8884,7 +8884,7 @@
 
   /* debug / test hooks (harmless in production, useful for automated checks) */
   window.SPEC = {
-    version: '0.1.0',
+    version: '0.1.1',
     getState: () => ({
       phase: state.phase,
       view: state.view,

@@ -174,7 +174,7 @@ if _LEGACY_WARDROBE_ORDER_PATH.exists() and not WARDROBE_ORDER_PATH.exists():
     except OSError:
         pass
 HISTORY_LIMIT = 25
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 DEFAULT_PORT = 8765
 
 ALLOWED_ENGINES = {"auto", "chrome", "ollama", "openai", "libretranslate", "glossary"}
