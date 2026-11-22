@@ -6288,7 +6288,7 @@ body.is-image-viewing { overflow: hidden; }
 /* ==========================================================================
    GLOSSARY // WRITE — 词块写入词条库
    1) C 面板 header 触发按钮（选择态 / 拖拽释放态）
-   2) 词块勾选态 data-gpick = new | drift | on | same
+   2) 词块勾选态 data-gpick = new | drift | same | on（四种都可勾选）
    3) 确认添加浮窗
    ========================================================================== */
 
@@ -6397,9 +6397,10 @@ body.is-image-viewing { overflow: hidden; }
   pointer-events: none;
 }
 
-/* 勾选框：占用 .idx 的位置（已在库中且一致的 same 不给勾选框，避免误以为可点） */
+/* 勾选框：占用 .idx 的位置（same 也给，勾上后可在浮窗里改中文覆盖写入） */
 .blk[data-gpick="new"]::before,
 .blk[data-gpick="drift"]::before,
+.blk[data-gpick="same"]::before,
 .glossary-picking .blk[data-gpick="on"]::before {
   content: "";
   position: absolute;
@@ -6453,14 +6454,14 @@ body.is-image-viewing { overflow: hidden; }
   line-height: 1;
 }
 
-/* 库已有且一致 —— 不可勾选，压暗但保留牌形 */
+/* 库已有且一致 —— 也可勾选；勾上后在确认浮窗里改中文即可覆盖写入 */
 .blk[data-gpick="same"] {
   border-color: var(--line-2);
-  color: var(--ink-3);
-  cursor: default;
+  color: var(--ink-2);
+  cursor: pointer;
 }
-.glossary-picking .blk[data-gpick="same"] { opacity: 0.62; }
-.glossary-picking .blk[data-gpick="same"]:hover { border-color: var(--line-2); }
+.blk[data-gpick="same"]:hover { border-color: var(--line-3); background-color: var(--face-hover); }
+.glossary-picking .blk[data-gpick="same"] { opacity: 0.9; }
 .glossary-picking .sent { opacity: 0.4; }
 .glossary-picking .blk.is-editing,
 .glossary-picking .sent.is-editing { opacity: 1; }

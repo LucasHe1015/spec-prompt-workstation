@@ -8,8 +8,9 @@ Serves the static console from ./public and exposes a small JSON API:
   GET  /api/config        current configuration (API keys masked)
   POST /api/config        save configuration
   GET  /api/models        model list for ollama / openai-compatible
-  GET  /api/glossary      en -> zh tag glossary
-  POST /api/glossary      save glossary entries
+  GET  /api/glossary      en -> zh tag glossary (+ version)
+  POST /api/glossary      replace glossary entries (all-or-nothing, expectedVersion)
+  POST /api/glossary/upsert  merge entries into glossary (incremental, expectedVersion)
   POST /api/translate     translate parsed prompt blocks
   POST /api/unload        unload the Ollama model (free VRAM)
   GET  /api/history       list translation history (max 10)
@@ -1211,6 +1212,68 @@ def translate_texts(engine: str, cfg: dict, model: str, texts: list[str],
 # --------------------------------------------------------------------------- #
 _glossary_cache: dict = {"mtime": 0.0, "entries": {}}
 _glossary_lock = threading.Lock()
+
+# 全量写入接口只拦“明显不是词库的 payload”：真实 Danbooru 词库已到 10 万条量级，
+# 20000 是 9 千条时代的旧防线，会把正常写入挡在门外。
+MAX_GLOSSARY_ENTRIES = 400000
+MAX_GLOSSARY_KEY_LEN = 120
+MAX_GLOSSARY_VALUE_LEN = 160
+
+
+def glossary_version() -> str:
+    """词库文件的版本指纹（mtime_ns + 字节数），给增量写入做并发校验。"""
+    path = DATA / "glossary.json"
+    try:
+        st = path.stat()
+    except OSError:
+        return ""
+    return "%d-%d" % (st.st_mtime_ns, st.st_size)
+
+
+def clean_glossary_entries(raw):
+    """校验并规范化 en -> zh 词条；返回 (cleaned, code, message)。"""
+    if not isinstance(raw, dict):
+        return None, "BAD_GLOSSARY", "entries must be an object"
+    if len(raw) > MAX_GLOSSARY_ENTRIES:
+        return None, "GLOSSARY_TOO_LARGE", "too many glossary entries"
+    cleaned = {}
+    for key, value in raw.items():
+        if not isinstance(key, str) or not isinstance(value, str):
+            return None, "BAD_GLOSSARY", "entry keys and values must be strings"
+        clean_key = key.strip().lower()
+        clean_value = value.strip()
+        if not clean_key or not clean_value:
+            return None, "BAD_GLOSSARY", "entry key and value cannot be empty"
+        if len(clean_key) > MAX_GLOSSARY_KEY_LEN or len(clean_value) > MAX_GLOSSARY_VALUE_LEN:
+            return None, "BAD_GLOSSARY", "entry is too long"
+        if "," in clean_key or "\n" in clean_key:
+            return None, "BAD_GLOSSARY", "entry key cannot contain commas or newlines"
+        cleaned[clean_key] = clean_value
+    return cleaned, "", ""
+
+
+def apply_glossary_patch(patch: dict) -> dict:
+    """把增量词条并进当前词库，返回写入统计。没有实际变化时不重写文件。"""
+    current = dict(load_glossary())
+    added = 0
+    updated = 0
+    unchanged = 0
+    for key, value in patch.items():
+        if key not in current:
+            added += 1
+        elif current[key] != value:
+            updated += 1
+        else:
+            unchanged += 1
+        current[key] = value
+    if not added and not updated:
+        # 全是一致条目（或空 patch）：不落盘，文件版本号也跟着不变，
+        # 避免一次无意义的整库重写把别处的 expectedVersion 撞成 409。
+        return {"total": len(load_glossary()), "added": 0, "updated": 0,
+                "unchanged": unchanged, "written": False}
+    total = save_glossary(current)
+    return {"total": total, "added": added, "updated": updated,
+            "unchanged": unchanged, "written": True}
 
 
 def load_glossary() -> dict:
@@ -2418,32 +2481,31 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if path == "/api/glossary":
                 body = self._read_json()
-                entries = body.get("entries")
-                if not isinstance(entries, dict):
-                    self._error(400, "BAD_GLOSSARY", "entries must be an object")
+                expected = body.get("expectedVersion")
+                if isinstance(expected, str) and expected and expected != glossary_version():
+                    self._error(409, "GLOSSARY_CONFLICT",
+                                "glossary changed elsewhere, reload it first")
                     return
-                if len(entries) > 20000:
-                    self._error(400, "GLOSSARY_TOO_LARGE", "too many glossary entries")
+                cleaned, code, message = clean_glossary_entries(body.get("entries"))
+                if code:
+                    self._error(400, code, message)
                     return
-                cleaned = {}
-                for key, value in entries.items():
-                    if not isinstance(key, str) or not isinstance(value, str):
-                        self._error(400, "BAD_GLOSSARY", "entry keys and values must be strings")
-                        return
-                    clean_key = key.strip().lower()
-                    clean_value = value.strip()
-                    if not clean_key or not clean_value:
-                        self._error(400, "BAD_GLOSSARY", "entry key and value cannot be empty")
-                        return
-                    if len(clean_key) > 120 or len(clean_value) > 160:
-                        self._error(400, "BAD_GLOSSARY", "entry is too long")
-                        return
-                    if "," in clean_key or "\n" in clean_key:
-                        self._error(400, "BAD_GLOSSARY", "entry key cannot contain commas or newlines")
-                        return
-                    cleaned[clean_key] = clean_value
                 count = save_glossary(cleaned)
-                self._json(200, {"ok": True, "count": count})
+                self._json(200, {"ok": True, "count": count, "version": glossary_version()})
+                return
+            if path == "/api/glossary/upsert":
+                body = self._read_json()
+                expected = body.get("expectedVersion")
+                if isinstance(expected, str) and expected and expected != glossary_version():
+                    self._error(409, "GLOSSARY_CONFLICT",
+                                "glossary changed elsewhere, reload it first")
+                    return
+                cleaned, code, message = clean_glossary_entries(body.get("entries"))
+                if code:
+                    self._error(400, code, message)
+                    return
+                stats = apply_glossary_patch(cleaned)
+                self._json(200, dict({"ok": True, "version": glossary_version()}, **stats))
                 return
             if path == "/api/unload":
                 body = self._read_json()
@@ -2805,7 +2867,7 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {"config": redacted_config(cfg)})
             return
         if path == "/api/glossary":
-            self._json(200, {"entries": load_glossary()})
+            self._json(200, {"entries": load_glossary(), "version": glossary_version()})
             return
         if path == "/api/models":
             engine = params.get("engine", "ollama")

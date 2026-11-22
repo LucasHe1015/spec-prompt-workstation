@@ -22,6 +22,7 @@
     glossary: null,
     glossaryPromise: null,
     glossaryDirty: false,
+    glossaryVersion: '',              // GET /api/glossary 的版本指纹，写回时回传做并发校验
     glossaryRendered: false,
     glossaryRows: [],                 // [{ en, zh }] 编辑真源，顺序即词条库顺序
     glossaryView: [],                 // 过滤后行的索引，滚动窗口按它取行
@@ -1745,6 +1746,7 @@
         if (!res.ok) throw new Error('glossary unavailable');
         const data = await res.json();
         state.glossary = data.entries || {};
+        state.glossaryVersion = String(data.version || '');
         resetGlossaryRows(state.glossary);
         rebuildGlossaryReverse();
         if (el.glossaryFormCount) el.glossaryFormCount.textContent = String(state.glossaryRows.length);
@@ -2169,11 +2171,9 @@
     return normalizeGlossaryZh(existing) === normalizeGlossaryZh(zh) ? 'same' : 'drift';
   }
 
+  /* 已入库且译法一致的词块（same）也纳入候选：勾上后在确认浮窗里改中文即可覆盖写入 */
   function glossaryCandidateBlocks() {
-    return (state.blocks?.tags || []).filter((block) => {
-      const status = glossaryBlockStatus(block);
-      return status === 'new' || status === 'drift';
-    });
+    return (state.blocks?.tags || []).filter((block) => glossaryBlockStatus(block) !== 'skip');
   }
 
   /* 英文 → 词库键（尽量复用库里已有的键，避免下划线/空格写法出现重复词条） */
@@ -2233,7 +2233,7 @@
       const block = findBlock(node.dataset.bid);
       const status = glossaryBlockStatus(block);
       if (status === 'skip') { node.removeAttribute('data-gpick'); return; }
-      if (add.picks.has(node.dataset.bid) && status !== 'same') {
+      if (add.picks.has(node.dataset.bid)) {
         node.dataset.gpick = 'on';
         return;
       }
@@ -2254,7 +2254,7 @@
     add.picks.clear();
     syncGlossaryPickClass();
     syncGlossaryAddTrigger();
-    toast(`已高亮 ${candidates.length} 个未入库词块 · 点击勾选后点按钮确认，再点一次取消高亮`, 'info', 3800);
+    toast(`已高亮 ${candidates.length} 个词块 · 点击勾选后点按钮确认，再点一次取消高亮`, 'info', 3800);
   }
 
   function exitGlossaryPick({ silent = false } = {}) {
@@ -2273,7 +2273,6 @@
     if (!add.picking || !bid) return;
     const block = findBlock(bid);
     const status = glossaryBlockStatus(block);
-    if (status === 'same') { toast('该词块已在词条库中，译法一致', 'info', 2000); return; }
     if (status === 'skip') { toast('句块不能入库，请选择 TAGS 词块', 'info', 2400); return; }
     if (add.picks.has(bid)) add.picks.delete(bid);
     else add.picks.add(bid);
@@ -2281,14 +2280,28 @@
     syncGlossaryAddTrigger();
   }
 
-  function onGlossaryAddTrigger() {
+  /* 词条库有未保存改动时，必须在「确认添加」浮窗之前先确认一次：
+     此前这条确认挂在“确认写入”之后，浮窗已经弹出来了，顺序是反的。 */
+  async function requestGlossaryAddDialog(bids, options = {}) {
+    if (state.glossaryAdd.busy) return;
+    if (state.glossaryDirty) {
+      const ok = await confirmDiscardAction(
+        '词条库有未保存的修改。本次写入以已保存的词条库为基准，未保存的改动会被覆盖。继续添加？',
+        '词条库有未保存修改',
+      );
+      if (!ok) { exitGlossaryPick(); return; }
+    }
+    openGlossaryAddDialog(bids, options);
+  }
+
+  async function onGlossaryAddTrigger() {
     const add = state.glossaryAdd;
     if (add.open) return;
     if (!add.picking) { enterGlossaryPick(); return; }
     const bids = [...add.picks];
     /* 还没勾选任何词块时，再点按钮即退出选择态（取消高亮） */
     if (!bids.length) { exitGlossaryPick(); return; }
-    openGlossaryAddDialog(bids);
+    await requestGlossaryAddDialog(bids);
   }
 
   /* 词块末尾常带句号/逗号（源提示词的断句标点），入库前去掉，避免写出 "xxx." 这种键 */
@@ -2318,7 +2331,8 @@
     const info = glossaryKeyInfo(row.en, row.zh);
     const badge = info.mode === 'update' ? 'UPDATE · 改写'
       : (info.mode === 'same' ? 'EXIST · 一致' : 'NEW · 新增');
-    const diffHidden = info.mode === 'new' ? ' hidden' : '';
+    /* 只有“库里有、这次改了”才值得对比；new 无旧值、same 新旧相同都不显示 */
+    const diffHidden = info.mode === 'update' ? '' : ' hidden';
     const diffLabel = info.mode === 'same' ? '本次输入' : '本次改写';
     return `<div class="ga-row" data-index="${index}" data-mode="${info.mode}">` +
       `<span class="ga-idx">${pad2(index + 1)}</span>` +
@@ -2358,9 +2372,12 @@
     }
     if (el.glossaryAddOk) el.glossaryAddOk.disabled = !added && !updated;
     if (el.glossaryAddNote) {
-      el.glossaryAddNote.textContent = (!added && !updated)
-        ? '没有需要写入的变化；未入库的词块可先改中文译法。'
-        : (updated ? `其中 ${updated} 项会覆盖词条库中已有的中文译法。` : '确认后写入词条库，可直接改写英文或中文。');
+      const parts = [];
+      if (updated) parts.push(`其中 ${updated} 项会覆盖词条库中已有的中文译法。`);
+      if (same) parts.push(`另有 ${same} 项与词条库一致，改中文译法后即可写入。`);
+      el.glossaryAddNote.textContent = parts.length
+        ? parts.join(' ')
+        : (added ? '确认后写入词条库，可直接改写英文或中文。' : '没有需要写入的变化。');
     }
   }
 
@@ -2390,7 +2407,7 @@
     }
     const diff = rowEl.querySelector('.ga-diff');
     if (diff) {
-      diff.hidden = info.mode === 'new';
+      diff.hidden = info.mode !== 'update';
       const old = diff.querySelector('.ga-diff-old');
       if (old) old.textContent = info.existing;
       const label = diff.querySelector('.ga-diff-label.is-new');
@@ -2413,10 +2430,10 @@
   }
 
   function openGlossaryAddDialog(bids, { fromDrop = false } = {}) {
-    const candidates = buildGlossaryAddRows(bids || []);
-    const rows = candidates.filter((row) => glossaryKeyInfo(row.en, row.zh).mode !== 'same');
+    /* same 行也进浮窗：用户可以就地改中文译法，确认后按改写写回 */
+    const rows = buildGlossaryAddRows(bids || []);
     if (!rows.length) {
-      toast(candidates.length ? '所选词块与词条库一致，无需写入' : '没有可写入词条库的词块', 'info', 2600);
+      toast('没有可写入词条库的词块', 'info', 2600);
       return;
     }
     const add = state.glossaryAdd;
@@ -2484,42 +2501,49 @@
       payload.push({ en, zh });
     }
     if (!payload.length) return;
-    if (state.glossaryDirty && !(await confirmDiscardAction(
-      '词条库有未保存的修改。本次写入以已保存的词条库为基准，未保存的改动会被覆盖。继续添加？',
-      '词条库有未保存修改'))) return;
 
-    const entries = { ...(state.glossary || {}) };
+    /* 只提交本次这几条（增量 upsert），不再把 10 万条整库 POST 回去：
+       既避开体积上限，也不会用页面打开时的旧快照覆盖别处新增的词条。 */
+    const patch = {};
     let added = 0;
     let updated = 0;
     for (const item of payload) {
       const info = glossaryKeyInfo(item.en, item.zh);
       const key = info.key;
-      const current = entries[key];
+      const current = (state.glossary || {})[key];
       if (current === undefined || current === '') added += 1;
       else if (normalizeGlossaryZh(current) !== normalizeGlossaryZh(item.zh)) updated += 1;
-      entries[key] = item.zh;
+      patch[key] = item.zh;
     }
     add.busy = true;
     if (el.glossaryAddOk) { el.glossaryAddOk.disabled = true; el.glossaryAddOk.textContent = '写入中…'; }
     try {
-      const res = await fetch('/api/glossary', {
+      const res = await fetch('/api/glossary/upsert', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ entries }),
+        body: JSON.stringify({ entries: patch, expectedVersion: state.glossaryVersion || '' }),
       });
       let data = null;
       try { data = await res.json(); } catch { data = null; }
+      if (res.status === 409) {
+        toast('词条库刚被别处改动过，请重新载入后再写入', 'error', 4600);
+        return;
+      }
       if (!res.ok) throw new Error(data?.error?.message || '写入失败');
-      state.glossary = entries;
-      state.glossaryPromise = Promise.resolve(entries);
+      const merged = { ...(state.glossary || {}), ...patch };
+      state.glossary = merged;
+      state.glossaryPromise = Promise.resolve(merged);
+      state.glossaryVersion = String(data?.version || '');
       rebuildGlossaryReverse();
-      resetGlossaryRows(entries);
+      resetGlossaryRows(merged);
       markGlossaryDirty(false);
       refreshGlossaryView();
       closeGlossaryAddDialog();
       exitGlossaryPick({ silent: true });
       if (state.blocks) { renderSegments(); renderTarget(); }
-      toast(`已写入词条库 · 新增 ${added} · 改写 ${updated}`, 'info', 3200);
+      const a = Number(data?.added);
+      const u = Number(data?.updated);
+      toast(`已写入词条库 · 新增 ${Number.isFinite(a) ? a : added} · 改写 ${Number.isFinite(u) ? u : updated}`, 'info', 3200);
     } catch (err) {
       toast('写入词条库失败：' + prettyError(err), 'error', 4600);
     } finally {
@@ -2594,11 +2618,16 @@
       const res = await fetch('/api/glossary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ entries }),
+        body: JSON.stringify({ entries, expectedVersion: state.glossaryVersion || '' }),
       });
       let data = null;
       try { data = await res.json(); } catch { data = null; }
+      if (res.status === 409) {
+        toast('词条库刚被别处改动过：请先「重新载入」再保存', 'error', 4800);
+        return;
+      }
       if (!res.ok) throw new Error(data?.error?.message || '保存失败');
+      state.glossaryVersion = String(data?.version || '');
       state.glossary = entries;
       state.glossaryPromise = Promise.resolve(entries);
       rebuildGlossaryReverse();
@@ -2621,6 +2650,7 @@
       if (!res.ok) throw new Error('请求失败');
       const data = await res.json();
       state.glossary = data.entries || {};
+      state.glossaryVersion = String(data.version || '');
       state.glossaryPromise = Promise.resolve(state.glossary);
       resetGlossaryRows(state.glossary);
       rebuildGlossaryReverse();
@@ -7700,15 +7730,20 @@
          否则松手就是“什么都没发生”。词块类型校验放到 drop 里给出提示。 */
       event.preventDefault();
       const bid = dragBlockId || readDraggedBid(event);
-      const block = bid ? findBlock(bid) : null;
-      if (!block || block.kind !== 'tag') {
-        try { event.dataTransfer.dropEffect = pickDropEffect(event); } catch { /* ignore */ }
-        el.glossaryAddTrigger.classList.remove('is-drop-hover');
-        if (state.glossaryAdd.dragArmed) {
-          state.glossaryAdd.dragArmed = false;
-          syncGlossaryAddTrigger();
+      /* dragover 阶段 Chrome 不让读 dataTransfer 的内容，拿不到 bid 不代表不是词块：
+         只有确实拿到 bid 且不是 tag 时才撤下高亮，否则一进按钮就闪一下再消失。
+         类型校验放在 drop（那里一定能读到 bid），失败给 toast。 */
+      if (bid) {
+        const block = findBlock(bid);
+        if (!block || block.kind !== 'tag') {
+          try { event.dataTransfer.dropEffect = pickDropEffect(event); } catch { /* ignore */ }
+          el.glossaryAddTrigger.classList.remove('is-drop-hover');
+          if (state.glossaryAdd.dragArmed) {
+            state.glossaryAdd.dragArmed = false;
+            syncGlossaryAddTrigger();
+          }
+          return;
         }
-        return;
       }
       try { event.dataTransfer.dropEffect = pickDropEffect(event); } catch { /* ignore */ }
       el.glossaryAddTrigger.classList.add('is-drop-hover');
@@ -7728,7 +7763,7 @@
       }
     });
 
-    el.glossaryAddTrigger.addEventListener('drop', (event) => {
+    el.glossaryAddTrigger.addEventListener('drop', async (event) => {
       const bid = dragBlockId || readDraggedBid(event);
       if (!bid) return;
       const block = findBlock(bid);
@@ -7746,7 +7781,7 @@
       }
       const add = state.glossaryAdd;
       const bids = add.picking ? [...add.picks, bid] : [bid];
-      openGlossaryAddDialog(bids, { fromDrop: true });
+      await requestGlossaryAddDialog(bids, { fromDrop: true });
     });
 
     /* ---------------- 添加入词库：确认浮窗 ---------------- */
